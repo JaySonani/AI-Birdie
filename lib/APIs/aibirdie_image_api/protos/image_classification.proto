@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package aibirdie.image_classification;
+
+service ImageClassificationService {
+    rpc Classify (ImageClassificationRequest) returns (ImageClassificationResponse) {
+    }
+}
+
+message ImageClassificationRequest {
+    string imageData = 1;
+}
+
+message Result {
+    uint32 class_id = 1;
+    string label = 2;
+    uint32 rank = 3;
+    float percent = 4;
+}
+
+message ImageClassificationResponse {
+    repeated Result results = 1;
+}

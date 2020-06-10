@@ -1,0 +1,6 @@
+'SignInStatus' : true/false
+('SignInStatus', true);
+('userID', googleUser.id);
+('userName', googleUser.displayName);
+('userEmail', googleUser.email);
+('userPhotoUrl', googleUser.photoUrl);
