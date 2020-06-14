@@ -13,6 +13,8 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:aibirdie/screens/Dashboard/drawer/v_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:page_transition/page_transition.dart';
+import 'package:aibirdie/screens/Dashboard/drawer/supported_species.dart';
 
 final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
@@ -90,16 +92,13 @@ class _DashBoardState extends State<DashBoard>
                       "About AI-Birdie",
                       style: level2softdp,
                     ),
-                    onTap: (() => 
-                    
-                     Alert(
+                    onTap: (() => Alert(
                           context: context,
                           type: AlertType.info,
                           style: AlertStyle(
                               animationDuration: Duration(milliseconds: 500),
                               animationType: AnimationType.grow,
                               descStyle: level2softdp,
-
                               titleStyle: level1dp.copyWith(fontSize: 25)),
                           title: "AI Birdie",
                           desc:
@@ -168,29 +167,15 @@ class _DashBoardState extends State<DashBoard>
                   ),
                   ListTile(
                     onTap: () {
-                      Scaffold.of(context).showSnackBar(
-                        SnackBar(
-                          action: SnackBarAction(
-                            label: 'OK',
-                            onPressed: () {},
-                          ),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5)),
-                          backgroundColor: darkPurple,
-                          behavior: SnackBarBehavior.floating,
-                          content: Text(
-                            'Settings are not available yet.',
-                            style: level2softw,
-                          ),
-                        ),
-                      );
-                    },
+Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => SupportedSpecies()),
+                      );                    },
                     leading: Icon(
                       Icons.settings,
                       color: darkPurple,
                     ),
                     title: Text(
-                      "Settings",
+                      "Supported Species",
                       style: level2softdp,
                     ),
                   ),
