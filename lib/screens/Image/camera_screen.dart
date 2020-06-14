@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+// import 'dart:io';
 import 'package:aibirdie/screens/upload_file.dart';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -22,17 +22,18 @@ class CameraScreen extends StatefulWidget {
 }
 
 class _CameraScreenState extends State<CameraScreen> {
+  List<String> inputImages = [];
   CameraController controller;
   var sca = 1.0;
   var animatedHeight = 80.0;
   var animatedMargin = 10.0;
   var animatedColor;
   var animatedBorder = Colors.white;
+
   AudioCache audioCache = AudioCache();
 
   bool flashOn = false;
-  bool sessionOn = false;
-  int sessionImageCount = 0;
+  bool session = false;
 
   @override
   void initState() {
@@ -57,9 +58,11 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var mediaQuery = MediaQuery.of(context).size;
+
     return !controller.value.isInitialized
         ? Container(
-          color: darkPurple,
+            color: darkPurple,
             child: Center(
               child: CircularProgressIndicator(),
             ),
@@ -75,58 +78,69 @@ class _CameraScreenState extends State<CameraScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: <Widget>[
-                            Expanded(
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 11.5, horizontal: 20),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(100),
-                                  color: Colors.black.withOpacity(0.1),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Text(
-                                      "AI Birdie",
-                                      style: level2softw.copyWith(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 11.5, horizontal: 20),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(100),
+                                      color: Colors.black.withOpacity(0.1),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(100)),
-                              width: 45,
-                              height: 45,
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.file_upload,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    PageTransition(
-                                      type: PageTransitionType.upToDown,
-                                      alignment: Alignment.center,
-                                      child: UploadFile(),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Text(
+                                          "AI Birdie",
+                                          style: level2softw.copyWith(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
                                     ),
-                                  );
-                                },
-                              ),
-                            )
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(100)),
+                                  width: 45,
+                                  height: 45,
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.file_upload,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        PageTransition(
+                                          type: PageTransitionType.upToDown,
+                                          alignment: Alignment.center,
+                                          child: UploadFile(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                //...
+                              ],
+                            ),
                           ],
                         ),
                         Column(
@@ -188,50 +202,6 @@ class _CameraScreenState extends State<CameraScreen> {
                                     ],
                                   ),
                                 ),
-                                // Column(
-                                //   children: <Widget>[
-                                //     SizedBox(
-                                //       height: 10,
-                                //     ),
-                                //     Visibility(
-                                //       visible: sessionOn,
-                                //       child: AnimatedContainer(
-                                //         duration: Duration(milliseconds: 300),
-                                //         child: Stack(
-                                //           alignment: Alignment.topRight,
-                                //           children: <Widget>[
-                                //             IconButton(
-                                //               icon: Icon(
-                                //                 Icons.photo_library,
-                                //                 color: Colors.white,
-                                //                 size: 30,
-                                //               ),
-                                //               onPressed: () {
-                                //                 LandingPage.camController
-                                //                     .animateToPage(1,
-                                //                         duration: Duration(
-                                //                             milliseconds: 300),
-                                //                         curve:
-                                //                             Curves.easeInOut);
-                                //               },
-                                //             ),
-                                //             CircleAvatar(
-                                //               backgroundColor: softGreen,
-                                //               radius: 8,
-                                //               child: Text(
-                                //                 sessionImageCount.toString(),
-                                //                 style: level2softw.copyWith(
-                                //                     fontSize: 10,
-                                //                     fontWeight:
-                                //                         FontWeight.bold),
-                                //               ),
-                                //             ),
-                                //           ],
-                                //         ),
-                                //       ),
-                                //     ),
-                                //   ],
-                                // ),
                                 Container(
                                   width: 100,
                                   child: Column(
@@ -262,6 +232,38 @@ class _CameraScreenState extends State<CameraScreen> {
                           ],
                         ),
                       ],
+                    ),
+                  ),
+                  AnimatedPositioned(
+                    top: 100,
+                    left: session ? mediaQuery.width - 120 : mediaQuery.width,
+                    duration: Duration(milliseconds: 300),
+                    child: RaisedButton(
+                      padding: EdgeInsets.only(right: 50, left: 10),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ImageResult(imageInputFiles: inputImages,),
+                          ),
+                        );
+                        print(inputImages);
+                      },
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      color: softGreen,
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.search,
+                            color: Colors.white,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text("IDENTIFY", style: level2softw),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -339,10 +341,6 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void _onCapturePressed(context) async {
-    // setState(() {
-    //   sessionOn = true;
-    //   sessionImageCount++;
-    // });
     try {
       final path =
           '/storage/emulated/0/AiBirdie/Images/${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -353,7 +351,6 @@ class _CameraScreenState extends State<CameraScreen> {
 
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.none) {
-        print("aama aaja");
         Alert(
             context: context,
             title: "Network Error",
@@ -381,15 +378,21 @@ class _CameraScreenState extends State<CameraScreen> {
             ]).show();
         // Navigator.of(context).pop();
       } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ImageResult(File(path)),
-          ),
-        );
+        inputImages.add(path);
+
+        // setState(() {
+        // });
+
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        // builder: (context) => ImageResult(File(path)),
+        //   ),
+        // );
       }
 
       setState(() {
+        session = true;
         animatedHeight = 80.0;
         animatedMargin = 5.0;
         animatedColor = null;

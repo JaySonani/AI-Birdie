@@ -69,14 +69,12 @@ class _TriviaScreenState extends State<TriviaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // var a = widget.docSpecies.documentID;
-    // print("Images: $a");
-    // print("id: ${widget.id}");
-    // print("label: ${widget.label}");
-    // print("accuracy: ${widget.accuracy}");
-    // print("accuracyString: ${widget.accuracyString}");
+    print("id: ${widget.id}");
+    print("label: ${widget.label}");
+    print("accuracy: ${widget.accuracy}");
+    print("accuracyString: ${widget.accuracyString}");
     // print("docSpecies: ${widget.docSpecies.collection('images')}");
-    // print("inputImageFile: ${widget.inputImageFile}");
+    print("inputImageFile: ${widget.inputImageFile}");
 
     final mediaQuery = MediaQuery.of(context).size;
     return Scaffold(
@@ -200,33 +198,6 @@ class _TriviaScreenState extends State<TriviaScreen> {
                               SizedBox(
                                 height: 10,
                               ),
-
-                              // Row(
-                              //   // mainAxisAlignment:
-                              //   //     MainAxisAlignment.spaceBetween,
-                              //   children: <Widget>[
-                              //     for (var i = 0; i < 3; i++)
-                              //       _loading
-                              //           ? CircularProgressIndicator()
-                              //           :
-                              // Container(
-
-                              //             margin: EdgeInsets.all(5),
-                              //               height:100,
-                              //               width: 100,
-
-                              //               decoration: BoxDecoration(
-                              //                 borderRadius: BorderRadius.circular(10),
-                              //                 image: DecorationImage(
-                              //                   fit: BoxFit.cover,
-                              //                   image: FirebaseImage(imageStrings[i])
-                              //                 )
-                              //               ),
-
-                              //             ),
-                              //   ],
-                              // ),
-
                               _loading
                                   ? Container(
                                       height: mediaQuery.height * 0.35,
