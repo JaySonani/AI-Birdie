@@ -100,7 +100,7 @@ class _DashBoardState extends State<DashBoard>
                               animationType: AnimationType.grow,
                               descStyle: level2softdp,
                               titleStyle: level1dp.copyWith(fontSize: 25)),
-                          title: "AI Birdie",
+                          title: "AI-Birdie",
                           desc:
                               "LEVERAGING THE POWER OF AI TO DEMOCRATIZE ORNITHOLOGY\n\nA mobile app for visual and acoustic classification of birds species.\n\nAI-Birdie is a breakthrough app that helps everyone with a smartphone or tablet to accurately identify birds in their backyard, local park, or nature trail—all with the tap of a button! Just hold up your phone, record the bird singing or capture the bird photo, and AI-Birdie will help you identify the species. The app’s highly sophisticated algorithms helps you accurately identify bird species and help you learn more about them. Thus, AI-Birdie is a one-stop application for all the bird watchers and wildlife enthusiasts out there in India.",
                           buttons: [
@@ -167,11 +167,14 @@ class _DashBoardState extends State<DashBoard>
                   ),
                   ListTile(
                     onTap: () {
-Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => SupportedSpecies()),
-                      );                    },
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => SupportedSpecies(),
+                        ),
+                      );
+                    },
                     leading: Icon(
-                      Icons.settings,
+                      Icons.format_list_bulleted,
                       color: darkPurple,
                     ),
                     title: Text(

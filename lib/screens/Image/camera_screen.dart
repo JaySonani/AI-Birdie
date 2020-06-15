@@ -259,6 +259,7 @@ class _CameraScreenState extends State<CameraScreen> {
                               );
                               setState(() {
                                 session = false;
+                                imageCount = 0;
                               });
                             },
                             shape: RoundedRectangleBorder(

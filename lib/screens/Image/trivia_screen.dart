@@ -237,7 +237,7 @@ class _TriviaScreenState extends State<TriviaScreen> {
                                         padding: EdgeInsets.all(5),
                                         gridDelegate:
                                             SliverGridDelegateWithFixedCrossAxisCount(
-                                                crossAxisCount: 4),
+                                                crossAxisCount: 3),
                                         itemBuilder: (context, index) {
                                           return InkWell(
                                             onTap: () {
@@ -246,7 +246,8 @@ class _TriviaScreenState extends State<TriviaScreen> {
                                                     child: ZoomImage(
                                                       label: widget.label,
                                                       image: FirebaseImage(
-                                                          imageStrings[index]),
+                                                        imageStrings[index],
+                                                      ),
                                                     ),
                                                     type: PageTransitionType
                                                         .fade),
@@ -254,20 +255,34 @@ class _TriviaScreenState extends State<TriviaScreen> {
                                             },
                                             splashColor: softGreen,
                                             child: GridTile(
+                                              header: Container(
+                                                margin: EdgeInsets.only(
+                                                    right: 85, top: 10),
+                                                child: CircleAvatar(
+                                                    radius: 10,
+                                                    backgroundColor: darkPurple,
+                                                    child: Text(
+                                                      "${index + 1}",
+                                                      style:
+                                                          level2softw.copyWith(
+                                                              fontSize: 10),
+                                                    )),
+                                              ),
                                               child: Hero(
                                                 tag: FirebaseImage(
                                                     imageStrings[index]),
                                                 child: Container(
                                                   margin: EdgeInsets.all(5),
                                                   decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
-                                                      image: DecorationImage(
-                                                          image: FirebaseImage(
-                                                              imageStrings[
-                                                                  index]),
-                                                          fit: BoxFit.cover)),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                    image: DecorationImage(
+                                                        image: FirebaseImage(
+                                                            imageStrings[
+                                                                index]),
+                                                        fit: BoxFit.cover),
+                                                  ),
 
                                                   // child: Image(
                                                   //   fit: BoxFit.cover,
@@ -278,8 +293,9 @@ class _TriviaScreenState extends State<TriviaScreen> {
                                                   //           Widget child,
                                                   //           ImageChunkEvent
                                                   //               loadingProgress) {
-                                                  //     if (loadingProgress == null)
+                                                  //     if (loadingProgress == null){
                                                   //       return child;
+                                                  //     }
                                                   //     return Center(
                                                   //       child:
                                                   //           CircularProgressIndicator(

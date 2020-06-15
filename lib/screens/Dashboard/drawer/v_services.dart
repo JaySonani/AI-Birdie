@@ -58,7 +58,7 @@ Surat Karuna''';
         // elevation: 0.0,
         title: Text(
           "Veterinary Services Helpline",
-          style: level2w.copyWith(fontSize: 20),
+          style: level2softw,
         ),
       ),
       body: Stack(

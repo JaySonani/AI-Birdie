@@ -1,6 +1,6 @@
 import 'dart:io';
+
 import 'package:ai_birdie_image/aibirdieimage.dart';
-// import 'package:aibirdie/components/storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:aibirdie/constants.dart';
@@ -65,24 +65,24 @@ class _ImageResultState extends State<ImageResult> {
     // saveInfoLocally();
   }
 
-  // void saveInfoLocally() {
-  //   Map<String, dynamic> imageData = {};
-  //   String imageID =
-  //       widget.imageInputFile.path.split("/").last.split(".").first;
-  //   imageData.addAll({
-  //     imageID: {
-  //       'imageFile': widget.imageInputFile,
-  //       'ids': ids,
-  //       'labels': labels,
-  //       'accuracy': accuracy,
-  //       'accStr': accuracyStrings,
-  //       'docSpecies': docSpecies,
-  //     }
-  //   });
-  //   File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata.json');
-  //   appendContent(imageMetaData, imageData.toString());
+  void saveInfoLocally() {
+    Map<String, dynamic> imageData = {};
+    String imageID =
+        widget.imageInputFiles[0].split("/").last.split(".").first;
+    imageData.addAll({
+      imageID: {
+        'imageFile': widget.imageInputFiles[0],
+        'ids': ids,
+        'labels': labels,
+        'accuracy': accuracy,
+        'accStr': accuracyStrings,
+        'docSpecies': docSpecies,
+      }
+    });
+    // File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata');
+    debugPrint(imageData.toString());
 
-  // }
+  }
 
   @override
   Widget build(BuildContext context) {
