@@ -1,5 +1,4 @@
 import 'dart:async';
-// import 'dart:io';
 import 'package:aibirdie/screens/upload_file.dart';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -32,7 +31,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
   AudioCache audioCache = AudioCache();
 
-  bool flashOn = false;
+  int imageCount = 0;
+
   bool session = false;
 
   @override
@@ -44,14 +44,15 @@ class _CameraScreenState extends State<CameraScreen> {
       animatedMargin = 5.0;
       animatedColor = null;
       animatedBorder = Colors.white;
+      session = false;
     });
   }
 
   // @override
   // void dispose() {
-  //   controller.dispose();
+  //   // controller.dispose();
   //   setState(() {
-  //     sessionOn = false;
+  //     session = false;
   //   });
   //   super.dispose();
   // }
@@ -235,33 +236,57 @@ class _CameraScreenState extends State<CameraScreen> {
                     ),
                   ),
                   AnimatedPositioned(
+                    curve: Curves.bounceInOut,
                     top: 100,
                     left: session ? mediaQuery.width - 120 : mediaQuery.width,
                     duration: Duration(milliseconds: 300),
-                    child: RaisedButton(
-                      padding: EdgeInsets.only(right: 50, left: 10),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ImageResult(imageInputFiles: inputImages,),
-                          ),
-                        );
-                        print(inputImages);
-                      },
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100)),
-                      color: softGreen,
-                      child: Row(
+                    child: AnimatedOpacity(
+                      duration: Duration(milliseconds: 300),
+                      opacity: session ? 1.0 : 0.0,
+                      child: Stack(
+                        alignment: Alignment.centerLeft,
                         children: <Widget>[
-                          Icon(
-                            Icons.search,
-                            color: Colors.white,
+                          RaisedButton(
+                            padding: EdgeInsets.only(right: 50, left: 10),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ImageResult(
+                                    imageInputFiles: inputImages,
+                                  ),
+                                ),
+                              );
+                              setState(() {
+                                session = false;
+                              });
+                            },
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100)),
+                            color: softGreen,
+                            child: Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.search,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text("IDENTIFY", style: level2softw),
+                              ],
+                            ),
                           ),
-                          SizedBox(
-                            width: 10,
+                      
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                                                      child: CircleAvatar(
+                                                        backgroundColor: darkPurple,
+                                radius: 10,
+                                child: Text("$imageCount", style: level2softw),
+                              ),
                           ),
-                          Text("IDENTIFY", style: level2softw),
                         ],
                       ),
                     ),
@@ -376,23 +401,20 @@ class _CameraScreenState extends State<CameraScreen> {
                 ),
               ),
             ]).show();
-        // Navigator.of(context).pop();
       } else {
         inputImages.add(path);
-
-        // setState(() {
-        // });
-
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        // builder: (context) => ImageResult(File(path)),
-        //   ),
-        // );
+        // int total = 0;
+        // for (var i in inputImages) {
+        //   total = File(i).lengthSync();
+        // }
+        // print("Total: $total");
+        setState(() {
+          imageCount++;
+          session = true;
+        });
       }
 
       setState(() {
-        session = true;
         animatedHeight = 80.0;
         animatedMargin = 5.0;
         animatedColor = null;

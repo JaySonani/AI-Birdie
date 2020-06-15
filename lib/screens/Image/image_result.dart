@@ -31,21 +31,21 @@ class _ImageResultState extends State<ImageResult> {
     _doPrediction();
   }
 
+
+
   void _doPrediction() async {
     Firestore db = Firestore.instance;
     CollectionReference refBirdSpecies = db.collection("bird-species");
 
+    var classifier = AIBirdieImage.classification();
 
-   var classifier = AIBirdieImage.classification();
-
-    var predictionResult =
-       await classifier.predict(widget.imageInputFiles);
+    var predictionResult = await classifier.predict(widget.imageInputFiles);
     for (Map result in predictionResult) {
       // //
       ids = List.castFrom<dynamic, int>(result['id']);
 
       for (var e in ids) {
-      // //
+        // //
         docSpecies.add(await refBirdSpecies.document(e.toString()).get());
       }
       // //
@@ -86,14 +86,15 @@ class _ImageResultState extends State<ImageResult> {
 
   @override
   Widget build(BuildContext context) {
-
-    
     // print("Labesl: $labels");
     // print("Acc: $accuracyStrings");
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Top 20 Results", style: level2softw,),
+        title: Text(
+          "Top 20 Results",
+          style: level2softw,
+        ),
         centerTitle: true,
       ),
       body: ModalProgressHUD(
@@ -105,16 +106,17 @@ class _ImageResultState extends State<ImageResult> {
 
         inAsyncCall: _showSpinner,
         child: ListView.separated(
-          separatorBuilder: (context, index) => SizedBox(height: 15,),
+          separatorBuilder: (context, index) => SizedBox(
+            height: 15,
+          ),
           // physics: NeverScrollableScrollPhysics(),
           padding: EdgeInsets.all(15),
-          itemCount: labels.length,
+          itemCount: ids.length,
           itemBuilder: (BuildContext context, int index) {
             return Container(
                 child: Center(
                   child: RaisedButton(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     color: Color(0xfff5f5f5),
                     elevation: 0.0,
                     shape: RoundedRectangleBorder(
@@ -128,7 +130,7 @@ class _ImageResultState extends State<ImageResult> {
                             docSpecies: docSpecies[index],
                             id: ids[index],
                             label: labels[index],
-                            inputImageFile: File(widget.imageInputFiles[index]),
+                            inputImageFile: File(widget.imageInputFiles[0]),
                             index: index + 1,
                           ),
                         ),
@@ -136,8 +138,7 @@ class _ImageResultState extends State<ImageResult> {
                     },
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
                           "${index + 1}",
@@ -161,7 +162,7 @@ class _ImageResultState extends State<ImageResult> {
                   ),
                 ),
                 // margin:
-                    // EdgeInsets.only(bottom: 20, left: 30, right: 30),
+                // EdgeInsets.only(bottom: 20, left: 30, right: 30),
                 height: 70,
                 decoration: BoxDecoration(
                   color: Color(0xfff5f5f5),

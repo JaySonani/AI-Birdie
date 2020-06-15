@@ -69,12 +69,12 @@ class _TriviaScreenState extends State<TriviaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("id: ${widget.id}");
-    print("label: ${widget.label}");
-    print("accuracy: ${widget.accuracy}");
-    print("accuracyString: ${widget.accuracyString}");
-    // print("docSpecies: ${widget.docSpecies.collection('images')}");
-    print("inputImageFile: ${widget.inputImageFile}");
+    // print("id: ${widget.id}");
+    // print("label: ${widget.label}");
+    // print("accuracy: ${widget.accuracy}");
+    // print("accuracyString: ${widget.accuracyString}");
+    // // print("docSpecies: ${widget.docSpecies.collection('images')}");
+    // print("inputImageFile: ${widget.inputImageFile}");
 
     final mediaQuery = MediaQuery.of(context).size;
     return Scaffold(
