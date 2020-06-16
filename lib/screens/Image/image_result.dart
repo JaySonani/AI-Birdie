@@ -21,9 +21,12 @@ class ImagePrediction {
   static Firestore db = Firestore.instance;
   static CollectionReference refBirdSpecies = db.collection("bird-species");
 
-  final _ready = BehaviorSubject<bool>();
+  static List<ImagePrediction> _predictions = new List();
 
-  ValueStream<bool> get ready => _ready.stream;
+  static final _predictionSubject = BehaviorSubject<List<ImagePrediction>>();
+
+  static ValueStream<List<ImagePrediction>> get predictions =>
+      _predictionSubject.stream;
 
   List<int> _ids = [];
   List<String> _labels = [];
@@ -54,13 +57,20 @@ class ImagePrediction {
     _accuracyStrings = accuracy
         .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
         .toList();
-    _ready.add(true);
-    _ready.close();
+    _predictions.add(this);
+    _predictionSubject.add(_predictions);
   }
 
   ImagePrediction.fromResult(Map result) {
-    _ready.add(false);
     _process(result);
+  }
+
+  static void processResult(List<Map> results) {
+    _predictions = List();
+    _predictionSubject.add(_predictions);
+    for (Map result in results) {
+      ImagePrediction.fromResult(result);
+    }
   }
 }
 
@@ -71,9 +81,6 @@ class _ImageResultState extends State<ImageResult>
 
   // List<Tab> tabs = [];
   // List<Widget> tabBarViews = [];
-
-  // You can access all the predictions from here, indexed as images were
-  List<ImagePrediction> predictions = [];
 
   // Remove this when you updated the UI
   // You can access all these things for one image by predictions[i].ids etc.
@@ -96,9 +103,7 @@ class _ImageResultState extends State<ImageResult>
     var predictionResult = await classifier.predict(widget.imageInputFiles);
 
     setState(() {
-      for (Map result in predictionResult) {
-        predictions.add(ImagePrediction.fromResult(result));
-      }
+      ImagePrediction.processResult(predictionResult);
       // _showSpinner = false;
     });
 
@@ -134,41 +139,42 @@ class _ImageResultState extends State<ImageResult>
           style: level2softw,
         ),
         centerTitle: true,
-        bottom: TabBar(
-          indicatorColor: softGreen,
-          indicatorWeight: 5.0,
-          labelColor: Colors.white,
-          labelStyle: level2softdp,
-          unselectedLabelColor: Colors.white,
-          unselectedLabelStyle: level2softdp,
-          controller: tc,
-          tabs: <Widget>[
-            for (var i = 0; i < widget.imageInputFiles.length; i++)
-              Tab(
-                child: Text("${i + 1}"),
-              ),
-          ],
-        ),
+//        bottom: TabBar(
+//          indicatorColor: softGreen,
+//          indicatorWeight: 5.0,
+//          labelColor: Colors.white,
+//          labelStyle: level2softdp,
+//          unselectedLabelColor: Colors.white,
+//          unselectedLabelStyle: level2softdp,
+//          controller: tc,
+//          tabs: <Widget>[
+//            for (var i = 0; i < widget.imageInputFiles.length; i++)
+//              Tab(
+//                child: Text("${i + 1}"),
+//              ),
+//          ],
+//        ),
       ),
-      body: TabBarView(
-        controller: tc,
-        children: <Widget>[
-          for (var i = 0; i < widget.imageInputFiles.length; i++)
-            StreamBuilder<bool>(
-              stream: predictions[i].ready,
-              builder: (context, snapshot) => !snapshot.data
-                  ? Center(
-                    child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(darkPurple),
-                        strokeWidth: 2.0,
-                      ),
-                  )
-                  : ListView.separated(
+      body: StreamBuilder<List<ImagePrediction>>(
+        stream: ImagePrediction.predictions,
+        builder: (context, predictions) => !predictions.hasData ||
+                predictions.data.length == 0
+            ? Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(darkPurple),
+                  strokeWidth: 2.0,
+                ),
+              )
+            : TabBarView(
+                controller: tc,
+                children: <Widget>[
+                  for (ImagePrediction prediction in predictions.data)
+                    ListView.separated(
                       separatorBuilder: (context, index) => SizedBox(
                         height: 15,
                       ),
                       padding: EdgeInsets.all(15),
-                      itemCount: predictions[i].ids.length,
+                      itemCount: prediction.ids.length,
                       itemBuilder: (BuildContext context, int index) {
                         return Container(
                             child: Center(
@@ -183,14 +189,13 @@ class _ImageResultState extends State<ImageResult>
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) => TriviaScreen(
-                                        accuracy:
-                                            predictions[i].accuracy[index],
-                                        accuracyString: predictions[i]
-                                            .accuracyStrings[index],
+                                        accuracy: prediction.accuracy[index],
+                                        accuracyString:
+                                            prediction.accuracyStrings[index],
                                         docSpecies:
-                                            predictions[i].docSpecies[index],
-                                        id: predictions[i].ids[index],
-                                        label: predictions[i].labels[index],
+                                            prediction.docSpecies[index],
+                                        id: prediction.ids[index],
+                                        label: prediction.labels[index],
                                         inputImageFile:
                                             File(widget.imageInputFiles[0]),
                                         index: index + 1,
@@ -213,11 +218,11 @@ class _ImageResultState extends State<ImageResult>
                                           CrossAxisAlignment.end,
                                       children: <Widget>[
                                         Text(
-                                          predictions[i].labels[index],
+                                          prediction.labels[index],
                                           style: level2softdp,
                                         ),
                                         Text(
-                                          predictions[i].accuracyStrings[index],
+                                          prediction.accuracyStrings[index],
                                           style: level2softdp,
                                         ),
                                       ],
@@ -247,8 +252,8 @@ class _ImageResultState extends State<ImageResult>
                             ));
                       },
                     ),
-            ),
-        ],
+                ],
+              ),
       ),
     );
   }
