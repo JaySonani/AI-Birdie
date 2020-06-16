@@ -84,15 +84,6 @@ class _ImageResultState extends State<ImageResult>
     // loadWidgets();
   }
 
-  bool allPredictionsReady(){
-    for(var i in predictions){
-       if(i.ready == false){
-         return false;
-       }
-    }
-    return true;
-  }
-
 
   void _doPrediction() async {
     var classifier = AIBirdieImage.classification();
@@ -102,7 +93,7 @@ class _ImageResultState extends State<ImageResult>
       for (Map result in predictionResult) {
         predictions.add(ImagePrediction.fromResult(result));
       }      
-      _showSpinner = false;
+      // _showSpinner = false;
     });
 
     // File dump = File('/storage/emulated/0/AiBirdie/dump.txt');
