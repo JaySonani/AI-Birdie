@@ -2,11 +2,10 @@ import 'dart:io';
 
 import 'package:aibirdie/constants.dart';
 import 'package:aibirdie/screens/Audio/audio_identify.dart';
-// import 'package:aibirdie/screens/Image/image_result.dart';
+import 'package:aibirdie/screens/Image/image_result.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-// import 'package:image_picker/image_picker.dart';
-// import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:multi_media_picker/multi_media_picker.dart';
 
 class UploadFile extends StatefulWidget {
   @override
@@ -14,9 +13,7 @@ class UploadFile extends StatefulWidget {
 }
 
 class _UploadFileState extends State<UploadFile> {
-
   List<String> inputs = [];
-
 
   @override
   Widget build(BuildContext context) {
@@ -83,41 +80,27 @@ class _UploadFileState extends State<UploadFile> {
                   ],
                 ),
                 onPressed: () async {
-                  // File image;
-                  // final picker = ImagePicker();
-                  // final pickedFile =
-                  //     await picker.getImage(source: ImageSource.gallery);
-                  // image = File(pickedFile.path);
-                  // List<Asset> picked;
 
-                  // picked = await MultiImagePicker.pickImages(
-                  //   maxImages: 5,
-                  //   materialOptions: MaterialOptions(
-                  //     actionBarColor: "#1CAA53",
-                  //     actionBarTitle: "Select images",
-                  //     actionBarTitleColor: "#ffffff",
-                  //     statusBarColor: "#1D1B27",
+                  final picked = await MultiMediaPicker.pickImages(
+                    source: ImageSource.gallery,
+                  );
 
-                      
-                  //   ),
+                  if (picked != null) {
+                    setState(() {
+                      inputs.clear();
+                      for (var i in picked) inputs.add(i.path);
+                    });
 
-                  // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ImageResult(imageInputFiles: inputs),
+                      ),
+                    );
+                  }
 
-                  // for(var i in picked){
-                  //   print(i.);
-                  // }
-
-
-
-
-                  // if (inputs.length > 0)
-                  // // print("Image path: ${image.path}");
-                  //   Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => ImageResult(imageInputFiles: [''],),
-                  //     ),
-                  //   );
+                  // print("Image path: ${image.path}");
                 },
               ),
             ),
@@ -167,8 +150,13 @@ class _UploadFileState extends State<UploadFile> {
                     type: FileType.audio,
                   );
                   if (file != null) {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AudioIdentify(file: file,)));
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => AudioIdentify(
+                          file: file,
+                        ),
+                      ),
+                    );
                   }
                 },
               ),

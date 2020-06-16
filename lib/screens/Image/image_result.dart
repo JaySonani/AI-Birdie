@@ -4,7 +4,7 @@ import 'package:ai_birdie_image/aibirdieimage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:aibirdie/constants.dart';
-import 'package:aibirdie/screens/Image/trivia_screen.dart';
+// import 'package:aibirdie/screens/Image/trivia_screen.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 class ImageResult extends StatefulWidget {
@@ -19,19 +19,23 @@ class ImageResult extends StatefulWidget {
 class _ImageResultState extends State<ImageResult> {
   bool _showSpinner = true;
 
-  List<int> ids = [];
-  List<String> labels = [];
-  List<double> accuracy = [];
-  List<String> accuracyStrings = [];
-  List<DocumentSnapshot> docSpecies = [];
+  // List<int> ids = [];
+  // List<String> labels = [];
+  // List<double> accuracy = [];
+  // List<String> accuracyStrings = [];
+  // List<DocumentSnapshot> docSpecies = [];
+
+  List ids = [];
+  List labels = [];
+  List accuracy = [];
+  List accuracyStrings = [];
+  List docSpecies = [];
 
   @override
   void initState() {
     super.initState();
     _doPrediction();
   }
-
-
 
   void _doPrediction() async {
     Firestore db = Firestore.instance;
@@ -41,38 +45,43 @@ class _ImageResultState extends State<ImageResult> {
     var predictionResult = await classifier.predict(widget.imageInputFiles);
 
     for (Map result in predictionResult) {
-      ids = List.castFrom<dynamic, int>(result['id']);
-      for (var e in ids) {
-        docSpecies.add(await refBirdSpecies.document(e.toString()).get());
+      ids.add(List.castFrom<dynamic, int>(result['id']));
+      accuracy.add(List.castFrom<dynamic, double>(result['probabilities']));
+
+      for (var id in ids) {
+        var temp = [];
+        for (var i in id) {
+          temp.add(await refBirdSpecies.document(i.toString()).get());
+        }
+        docSpecies.add(temp);
       }
-      accuracy = List.castFrom<dynamic, double>(result['probabilities']);
+
+      for (var i in docSpecies)
+        labels.add(i.map<String>((e) => e.data["name"]).toList());
+
+      for (var i in accuracy)
+        accuracyStrings.add(i
+            .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
+            .toList());
     }
-
-    setState(() {
-      labels = docSpecies.map<String>((e) => e.data["name"]).toList();
-      accuracyStrings = accuracy
-          .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
-          .toList();
-      _showSpinner = false;
-    });
-
     File dump = File('/storage/emulated/0/AiBirdie/dump.txt');
-    dump.writeAsStringSync("ID:\n" + ids.toString(), mode: FileMode.write);
-    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
-    dump.writeAsStringSync("Label:\n" + labels.toString(), mode: FileMode.append);
-    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
-    dump.writeAsStringSync("Accuracy:\n" + accuracy.toString(), mode: FileMode.append);
-    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
-    dump.writeAsStringSync("Accuracy string:\n" + accuracyStrings.toString(), mode: FileMode.append);
-    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
+    dump.writeAsStringSync(
+        "${ids.toString()}\n\n${labels.toString()}\n\n${accuracy.toString()}\n\n${accuracyStrings.toString()}\n\n${docSpecies.toString()}",
+        mode: FileMode.write);
 
+    // setState(() {
+    //   labels = docSpecies.map<String>((e) => e.data["name"]).toList();
+    //   accuracyStrings = accuracy
+    //       .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
+    //       .toList();
+    //   _showSpinner = false;
+    // });
     // saveInfoLocally();
   }
 
   void saveInfoLocally() {
     Map<String, dynamic> imageData = {};
-    String imageID =
-        widget.imageInputFiles[0].split("/").last.split(".").first;
+    String imageID = widget.imageInputFiles[0].split("/").last.split(".").first;
     imageData.addAll({
       imageID: {
         'imageFile': widget.imageInputFiles[0],
@@ -85,7 +94,6 @@ class _ImageResultState extends State<ImageResult> {
     });
     // File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata');
     // debugPrint(imageData.toString());
-
   }
 
   @override
@@ -126,19 +134,19 @@ class _ImageResultState extends State<ImageResult> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15)),
                     onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => TriviaScreen(
-                            accuracy: accuracy[index],
-                            accuracyString: accuracyStrings[index],
-                            docSpecies: docSpecies[index],
-                            id: ids[index],
-                            label: labels[index],
-                            inputImageFile: File(widget.imageInputFiles[0]),
-                            index: index + 1,
-                          ),
-                        ),
-                      );
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (context) => TriviaScreen(
+                      //       accuracy: accuracy[index],
+                      //       accuracyString: accuracyStrings[index],
+                      //       docSpecies: docSpecies[index],
+                      //       id: ids[index],
+                      //       label: labels[index],
+                      //       inputImageFile: File(widget.imageInputFiles[0]),
+                      //       index: index + 1,
+                      //     ),
+                      //   ),
+                      // );
                     },
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,

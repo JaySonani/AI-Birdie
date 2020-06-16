@@ -22,9 +22,9 @@ dependencies:
     
   # image
   camera: ^0.5.8+1
-  image_picker: ^0.6.7
-  multi_image_picker: ^4.6.7
-
+  # image_picker: ^0.6.7
+  multi_media_picker: ^0.2.3
+  
   # audio
   flutter_audio_recorder: ^0.5.5
   audioplayers: ^0.15.1

@@ -62,6 +62,8 @@ class _TriviaScreenState extends State<TriviaScreen> {
     setState(() {
       for (var i in imagesDocs) {
         imageStrings.add("gs://aibirdie-app/data/images/${i.documentID}");
+        if(imageStrings.length == 9)
+          break;
       }
       _loading = false;
     });

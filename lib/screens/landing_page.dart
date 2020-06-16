@@ -12,7 +12,7 @@ List<CameraDescription> cameras;
 
 class LandingPage extends StatefulWidget {
   static PageController controller =
-      PageController(initialPage: 1, keepPage: false);
+      PageController(initialPage: 1, keepPage: false,);
 
   static PageController camController = PageController(
     keepPage: false,
@@ -30,15 +30,16 @@ class _LandingPageState extends State<LandingPage> {
   var _currentPage = 1;
   var _pages = [
     DashBoard(),
-    // PageView(
+    PageView(
+      
 
     //   controller: LandingPage.camController,
-    //   scrollDirection: Axis.vertical,
-    //   children: <Widget>[
+      scrollDirection: Axis.vertical,
+      children: <Widget>[
         CameraScreen(cameras),
-    //     Container(),
-    //   ],
-    // ),
+        Container(),
+      ],
+    ),
     // AudioClassification(),
     StartRecording(),
   ];
