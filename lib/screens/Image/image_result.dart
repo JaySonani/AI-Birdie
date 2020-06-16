@@ -16,9 +16,60 @@ class ImageResult extends StatefulWidget {
   _ImageResultState createState() => _ImageResultState();
 }
 
+class ImagePrediction {
+  static Firestore db = Firestore.instance;
+  static CollectionReference refBirdSpecies = db.collection("bird-species");
+
+  bool _ready = true;
+
+  List<int> _ids;
+  List<String> _labels;
+  List<double> _accuracy;
+  List<String> _accuracyStrings;
+  List<DocumentSnapshot> _docSpecies;
+
+  List<int> get ids => _ids;
+
+  List<String> get labels => _labels;
+
+  List<double> get accuracy => _accuracy;
+
+  List<String> get accuracyStrings => _accuracyStrings;
+
+  List<DocumentSnapshot> get docSpecies => _docSpecies;
+
+  bool get ready => _ready;
+
+  ImagePrediction(this._ids, this._labels, this._accuracy,
+      this._accuracyStrings, this._docSpecies);
+
+  void _process(Map result) async {
+    _ids = List.castFrom<dynamic, int>(result['id']);
+    for (var e in ids) {
+      docSpecies.add(await refBirdSpecies.document(e.toString()).get());
+    }
+    _accuracy = List.castFrom<dynamic, double>(result['probabilities']);
+    _labels = docSpecies.map<String>((e) => e.data["name"]).toList();
+    _accuracyStrings = accuracy
+        .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
+        .toList();
+    _ready = true;
+  }
+
+  ImagePrediction.fromResult(Map result) {
+    _ready = false;
+    _process(result);
+  }
+}
+
 class _ImageResultState extends State<ImageResult> {
   bool _showSpinner = true;
 
+  // You can access all the predictions from here, indexed as images were
+  List<ImagePrediction> predictions;
+
+  // Remove this when you updated the UI
+  // You can access all these things for one image by predictions[i].ids etc.
   List<int> ids = [];
   List<String> labels = [];
   List<double> accuracy = [];
@@ -31,8 +82,6 @@ class _ImageResultState extends State<ImageResult> {
     _doPrediction();
   }
 
-
-
   void _doPrediction() async {
     Firestore db = Firestore.instance;
     CollectionReference refBirdSpecies = db.collection("bird-species");
@@ -41,11 +90,7 @@ class _ImageResultState extends State<ImageResult> {
     var predictionResult = await classifier.predict(widget.imageInputFiles);
 
     for (Map result in predictionResult) {
-      ids = List.castFrom<dynamic, int>(result['id']);
-      for (var e in ids) {
-        docSpecies.add(await refBirdSpecies.document(e.toString()).get());
-      }
-      accuracy = List.castFrom<dynamic, double>(result['probabilities']);
+      predictions.add(ImagePrediction.fromResult(result));
     }
 
     setState(() {
@@ -58,21 +103,27 @@ class _ImageResultState extends State<ImageResult> {
 
     File dump = File('/storage/emulated/0/AiBirdie/dump.txt');
     dump.writeAsStringSync("ID:\n" + ids.toString(), mode: FileMode.write);
-    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
-    dump.writeAsStringSync("Label:\n" + labels.toString(), mode: FileMode.append);
-    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
-    dump.writeAsStringSync("Accuracy:\n" + accuracy.toString(), mode: FileMode.append);
-    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
-    dump.writeAsStringSync("Accuracy string:\n" + accuracyStrings.toString(), mode: FileMode.append);
-    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
+    dump.writeAsStringSync("\n----------------------------------------\n",
+        mode: FileMode.append);
+    dump.writeAsStringSync("Label:\n" + labels.toString(),
+        mode: FileMode.append);
+    dump.writeAsStringSync("\n----------------------------------------\n",
+        mode: FileMode.append);
+    dump.writeAsStringSync("Accuracy:\n" + accuracy.toString(),
+        mode: FileMode.append);
+    dump.writeAsStringSync("\n----------------------------------------\n",
+        mode: FileMode.append);
+    dump.writeAsStringSync("Accuracy string:\n" + accuracyStrings.toString(),
+        mode: FileMode.append);
+    dump.writeAsStringSync("\n----------------------------------------\n",
+        mode: FileMode.append);
 
     // saveInfoLocally();
   }
 
   void saveInfoLocally() {
     Map<String, dynamic> imageData = {};
-    String imageID =
-        widget.imageInputFiles[0].split("/").last.split(".").first;
+    String imageID = widget.imageInputFiles[0].split("/").last.split(".").first;
     imageData.addAll({
       imageID: {
         'imageFile': widget.imageInputFiles[0],
@@ -85,7 +136,6 @@ class _ImageResultState extends State<ImageResult> {
     });
     // File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata');
     // debugPrint(imageData.toString());
-
   }
 
   @override
