@@ -4,7 +4,7 @@ import 'package:ai_birdie_image/aibirdieimage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:aibirdie/constants.dart';
-// import 'package:aibirdie/screens/Image/trivia_screen.dart';
+import 'package:aibirdie/screens/Image/trivia_screen.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 class ImageResult extends StatefulWidget {
@@ -16,91 +16,120 @@ class ImageResult extends StatefulWidget {
   _ImageResultState createState() => _ImageResultState();
 }
 
-class _ImageResultState extends State<ImageResult> {
+class ImagePrediction {
+  static Firestore db = Firestore.instance;
+  static CollectionReference refBirdSpecies = db.collection("bird-species");
+
+  bool _ready = true;
+
+  List<int> _ids = [];
+  List<String> _labels = [];
+  List<double> _accuracy = [];
+  List<String> _accuracyStrings = [];
+  List<DocumentSnapshot> _docSpecies = [];
+
+  List<int> get ids => _ids;
+  List<String> get labels => _labels;
+  List<double> get accuracy => _accuracy;
+  List<String> get accuracyStrings => _accuracyStrings;
+  List<DocumentSnapshot> get docSpecies => _docSpecies;
+
+  bool get ready => _ready;
+
+  ImagePrediction(this._ids, this._labels, this._accuracy,
+      this._accuracyStrings, this._docSpecies);
+
+  void _process(Map result) async {
+    _ids = List.castFrom<dynamic, int>(result['id']);
+    for (var e in ids) {
+      docSpecies.add(await refBirdSpecies.document(e.toString()).get());
+    }
+    _accuracy = List.castFrom<dynamic, double>(result['probabilities']);
+    _labels = docSpecies.map<String>((e) => e.data["name"]).toList();
+    _accuracyStrings = accuracy
+        .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
+        .toList();
+    _ready = true;
+  }
+
+  ImagePrediction.fromResult(Map result) {
+    _ready = false;
+    _process(result);
+  }
+}
+
+class _ImageResultState extends State<ImageResult>
+    with SingleTickerProviderStateMixin {
   bool _showSpinner = true;
+  TabController tc;
+  // List<Tab> tabs = [];
+  // List<Widget> tabBarViews = [];
 
-  // List<int> ids = [];
-  // List<String> labels = [];
-  // List<double> accuracy = [];
-  // List<String> accuracyStrings = [];
-  // List<DocumentSnapshot> docSpecies = [];
+  // You can access all the predictions from here, indexed as images were
+  List<ImagePrediction> predictions = [];
 
-  List ids = [];
-  List labels = [];
-  List accuracy = [];
-  List accuracyStrings = [];
-  List docSpecies = [];
+  // Remove this when you updated the UI
+  // You can access all these things for one image by predictions[i].ids etc.
+  List<int> ids = [];
+  List<String> labels = [];
+  List<double> accuracy = [];
+  List<String> accuracyStrings = [];
+  List<DocumentSnapshot> docSpecies = [];
 
   @override
   void initState() {
     super.initState();
     _doPrediction();
+    tc = TabController(length: widget.imageInputFiles.length, vsync: this);
+    // loadWidgets();
   }
 
-  void _doPrediction() async {
-    Firestore db = Firestore.instance;
-    CollectionReference refBirdSpecies = db.collection("bird-species");
+  bool allPredictionsReady(){
+    for(var i in predictions){
+       if(i.ready == false){
+         return false;
+       }
+    }
+    return true;
+  }
 
+
+  void _doPrediction() async {
     var classifier = AIBirdieImage.classification();
     var predictionResult = await classifier.predict(widget.imageInputFiles);
 
-    for (Map result in predictionResult) {
-      ids.add(List.castFrom<dynamic, int>(result['id']));
-      accuracy.add(List.castFrom<dynamic, double>(result['probabilities']));
+    setState(() {
+      for (Map result in predictionResult) {
+        predictions.add(ImagePrediction.fromResult(result));
+      }      
+      _showSpinner = false;
+    });
 
-      for (var id in ids) {
-        var temp = [];
-        for (var i in id) {
-          temp.add(await refBirdSpecies.document(i.toString()).get());
-        }
-        docSpecies.add(temp);
-      }
+    // File dump = File('/storage/emulated/0/AiBirdie/dump.txt');
+    // dump.writeAsStringSync("Predictions:\n" + predictions.map((e) => e.ids).toList().toString(), mode: FileMode.write);
 
-      for (var i in docSpecies)
-        labels.add(i.map<String>((e) => e.data["name"]).toList());
-
-      for (var i in accuracy)
-        accuracyStrings.add(i
-            .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
-            .toList());
-    }
-    File dump = File('/storage/emulated/0/AiBirdie/dump.txt');
-    dump.writeAsStringSync(
-        "${ids.toString()}\n\n${labels.toString()}\n\n${accuracy.toString()}\n\n${accuracyStrings.toString()}\n\n${docSpecies.toString()}",
-        mode: FileMode.write);
-
-    // setState(() {
-    //   labels = docSpecies.map<String>((e) => e.data["name"]).toList();
-    //   accuracyStrings = accuracy
-    //       .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
-    //       .toList();
-    //   _showSpinner = false;
-    // });
     // saveInfoLocally();
   }
 
-  void saveInfoLocally() {
-    Map<String, dynamic> imageData = {};
-    String imageID = widget.imageInputFiles[0].split("/").last.split(".").first;
-    imageData.addAll({
-      imageID: {
-        'imageFile': widget.imageInputFiles[0],
-        'ids': ids,
-        'labels': labels,
-        'accuracy': accuracy,
-        'accStr': accuracyStrings,
-        'docSpecies': docSpecies,
-      }
-    });
-    // File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata');
-    // debugPrint(imageData.toString());
-  }
+  // void saveInfoLocally() {
+  //   Map<String, dynamic> imageData = {};
+  //   String imageID = widget.imageInputFiles[0].split("/").last.split(".").first;
+  //   imageData.addAll({
+  //     imageID: {
+  //       'imageFile': widget.imageInputFiles[0],
+  //       'ids': ids,
+  //       'labels': labels,
+  //       'accuracy': accuracy,
+  //       'accStr': accuracyStrings,
+  //       'docSpecies': docSpecies,
+  //     }
+  //   });
+  // File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata');
+  // debugPrint(imageData.toString());
+  // }
 
   @override
   Widget build(BuildContext context) {
-    // print("Labesl: $labels");
-    // print("Acc: $accuracyStrings");
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -108,6 +137,19 @@ class _ImageResultState extends State<ImageResult> {
           style: level2softw,
         ),
         centerTitle: true,
+        bottom: TabBar(
+          indicatorColor: softGreen,
+          indicatorWeight: 5.0,
+          labelColor: Colors.white,
+          labelStyle: level2softdp,
+          unselectedLabelColor: Colors.white,
+          unselectedLabelStyle: level2softdp,
+          controller: tc,
+          tabs: <Widget>[
+            for(var i=0;i<widget.imageInputFiles.length;i++)
+              Tab(child: Text("${i+1}"),),
+          ],
+        ),
       ),
       body: ModalProgressHUD(
         // color: darkPurple,
@@ -117,82 +159,91 @@ class _ImageResultState extends State<ImageResult> {
         ),
 
         inAsyncCall: _showSpinner,
-        child: ListView.separated(
-          separatorBuilder: (context, index) => SizedBox(
-            height: 15,
-          ),
-          // physics: NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.all(15),
-          itemCount: ids.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Container(
-                child: Center(
-                  child: RaisedButton(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    color: Color(0xfff5f5f5),
-                    elevation: 0.0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
-                    onPressed: () {
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (context) => TriviaScreen(
-                      //       accuracy: accuracy[index],
-                      //       accuracyString: accuracyStrings[index],
-                      //       docSpecies: docSpecies[index],
-                      //       id: ids[index],
-                      //       label: labels[index],
-                      //       inputImageFile: File(widget.imageInputFiles[0]),
-                      //       index: index + 1,
-                      //     ),
-                      //   ),
-                      // );
-                    },
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "${index + 1}",
-                          style: level2softdp.copyWith(fontSize: 25),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: <Widget>[
-                            Text(
-                              labels[index],
-                              style: level2softdp,
-                            ),
-                            Text(
-                              accuracyStrings[index],
-                              style: level2softdp,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+        child: TabBarView(
+          controller: tc,
+          children: <Widget>[
+            for (var i = 0; i < widget.imageInputFiles.length; i++)
+              ListView.separated(
+                separatorBuilder: (context, index) => SizedBox(
+                  height: 15,
                 ),
-                // margin:
-                // EdgeInsets.only(bottom: 20, left: 30, right: 30),
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Color(0xfff5f5f5),
-                  boxShadow: [
-                    BoxShadow(
-                      offset: Offset(-6.00, -6.00),
-                      color: Color(0xffffffff).withOpacity(0.80),
-                      blurRadius: 10,
-                    ),
-                    BoxShadow(
-                      offset: Offset(6.00, 6.00),
-                      color: Color(0xff000000).withOpacity(0.20),
-                      blurRadius: 10,
-                    ),
-                  ],
-                  borderRadius: BorderRadius.circular(15.00),
-                ));
-          },
+                // physics: NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.all(15),
+                itemCount: predictions[i].ids.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                      child: Center(
+                        child: RaisedButton(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          color: Color(0xfff5f5f5),
+                          elevation: 0.0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => TriviaScreen(
+                                  accuracy: predictions[i].accuracy[index],
+                                  accuracyString:
+                                      predictions[i].accuracyStrings[index],
+                                  docSpecies: predictions[i].docSpecies[index],
+                                  id: predictions[i].ids[index],
+                                  label: predictions[i].labels[index],
+                                  inputImageFile:
+                                      File(widget.imageInputFiles[0]),
+                                  index: index + 1,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                "${index + 1}",
+                                style: level2softdp.copyWith(fontSize: 25),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: <Widget>[
+                                  Text(
+                                    predictions[i].labels[index],
+                                    style: level2softdp,
+                                  ),
+                                  Text(
+                                    predictions[i].accuracyStrings[index],
+                                    style: level2softdp,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // margin:
+                      // EdgeInsets.only(bottom: 20, left: 30, right: 30),
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: Color(0xfff5f5f5),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: Offset(-6.00, -6.00),
+                            color: Color(0xffffffff).withOpacity(0.80),
+                            blurRadius: 10,
+                          ),
+                          BoxShadow(
+                            offset: Offset(6.00, 6.00),
+                            color: Color(0xff000000).withOpacity(0.20),
+                            blurRadius: 10,
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(15.00),
+                      ));
+                },
+              ),
+          ],
         ),
       ),
     );
