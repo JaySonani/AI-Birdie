@@ -1,19 +1,19 @@
-import 'package:aibirdie/services.dart/authentication.dart';
-import 'package:connectivity/connectivity.dart';
-import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:share/share.dart';
 import 'package:flutter/material.dart';
 import 'package:aibirdie/constants.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:package_info/package_info.dart';
 import 'package:aibirdie/screens/landing_page.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:aibirdie/screens/Dashboard/dash.dart';
 import 'package:aibirdie/screens/Dashboard/my_notes.dart';
 import 'package:aibirdie/screens/Dashboard/checklist.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:aibirdie/services.dart/authentication.dart';
+import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:aibirdie/screens/Dashboard/drawer/v_services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:page_transition/page_transition.dart';
 import 'package:aibirdie/screens/Dashboard/drawer/supported_species.dart';
 
 final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
@@ -30,6 +30,8 @@ class _DashBoardState extends State<DashBoard>
 
   bool signedIn = false;
   bool showSpinner = false;
+
+  String version;
 
   int _selectedPage = 0;
   final _pages = [
@@ -49,6 +51,11 @@ class _DashBoardState extends State<DashBoard>
     super.initState();
     tc = TabController(length: 3, vsync: this);
     getSignInStatus();
+  }
+
+  void setVersionString() async {
+    PackageInfo pi = await PackageInfo.fromPlatform();
+    setState(() => version = pi.version);
   }
 
   void getSignInStatus() async {
@@ -92,29 +99,64 @@ class _DashBoardState extends State<DashBoard>
                       "About AI-Birdie",
                       style: level2softdp,
                     ),
-                    onTap: (() => Alert(
+                    onTap: (() => showAboutDialog(
                           context: context,
-                          type: AlertType.info,
-                          style: AlertStyle(
-                              animationDuration: Duration(milliseconds: 500),
-                              animationType: AnimationType.grow,
-                              descStyle: level2softdp,
-                              titleStyle: level1dp.copyWith(fontSize: 25)),
-                          title: "AI-Birdie",
-                          desc:
-                              "LEVERAGING THE POWER OF AI TO DEMOCRATIZE ORNITHOLOGY\n\nA mobile app for visual and acoustic classification of birds species.\n\nAI-Birdie is a breakthrough app that helps everyone with a smartphone or tablet to accurately identify birds in their backyard, local park, or nature trail—all with the tap of a button! Just hold up your phone, record the bird singing or capture the bird photo, and AI-Birdie will help you identify the species. The app’s highly sophisticated algorithms helps you accurately identify bird species and help you learn more about them. Thus, AI-Birdie is a one-stop application for all the bird watchers and wildlife enthusiasts out there in India.",
-                          buttons: [
-                            DialogButton(
-                              child: Text(
-                                "OK",
-                                style: level1w,
-                              ),
-                              color: softGreen,
-                              onPressed: () => Navigator.pop(context),
-                              width: 120,
-                            )
-                          ],
-                        ).show()),
+                          // builder: (context) {
+                          //   // File pubspec = File(join(Platform.script.toFilePath(),"../pubspec.yaml"));
+                          //   // print(pubspec.readAsStringSync());
+                          //   return AboutDialog(
+                              applicationIcon: Image.asset(
+                                  'images/ornithology.png',
+                                  width: 50),
+                              applicationName: "AI-Birdie",
+                              applicationVersion: version,
+                              children: <Widget>[
+                                // SizedBox(height: 15),
+                                Text(
+                                  "LEVERAGING THE POWER OF AI TO DEMOCRATIZE ORNITHOLOGY",
+                                  textAlign: TextAlign.center,
+                                  style: level2softdp,
+                                ),
+                                SizedBox(height: 15),
+                                Text(
+                                  "A mobile app for visual and acoustic classification of birds species.",
+                                  textAlign: TextAlign.center,
+                                  style: level2softdp,
+                                ),
+                                SizedBox(height: 15),
+                                Text(
+                                  "AI-Birdie is a breakthrough app that helps everyone with a smartphone or tablet to accurately identify birds in their backyard, local park, or nature trail—all with the tap of a button! Just hold up your phone, record the bird singing or capture the bird photo, and AI-Birdie will help you identify the species. The app’s highly sophisticated algorithms helps you accurately identify bird species and help you learn more about them. Thus, AI-Birdie is a one-stop application for all the bird watchers and wildlife enthusiasts out there in India.",
+                                  textAlign: TextAlign.justify,
+                                  style: level2softdp,
+                                ),
+                              ],
+                            // );
+                          // },
+                        )),
+
+                    // Alert(
+                    //       context: context,
+                    //       type: AlertType.info,
+                    //       style: AlertStyle(
+                    //           animationDuration: Duration(milliseconds: 500),
+                    //           animationType: AnimationType.grow,
+                    //           descStyle: level2softdp,
+                    //           titleStyle: level1dp.copyWith(fontSize: 25)),
+                    //       title: "AI-Birdie",
+                    //       desc:
+                    //           "LEVERAGING THE POWER OF AI TO DEMOCRATIZE ORNITHOLOGY\n\nA mobile app for visual and acoustic classification of birds species.\n\nAI-Birdie is a breakthrough app that helps everyone with a smartphone or tablet to accurately identify birds in their backyard, local park, or nature trail—all with the tap of a button! Just hold up your phone, record the bird singing or capture the bird photo, and AI-Birdie will help you identify the species. The app’s highly sophisticated algorithms helps you accurately identify bird species and help you learn more about them. Thus, AI-Birdie is a one-stop application for all the bird watchers and wildlife enthusiasts out there in India.",
+                    //       buttons: [
+                    //         DialogButton(
+                    //           child: Text(
+                    //             "OK",
+                    //             style: level1w,
+                    //           ),
+                    //           color: softGreen,
+                    //           onPressed: () => Navigator.pop(context),
+                    //           width: 120,
+                    //         )
+                    //       ],
+                    //     ).show()),
                   ),
                   ListTile(
                     leading: Icon(
@@ -428,18 +470,18 @@ class _DashBoardState extends State<DashBoard>
 
   Widget notSignedInWidget() {
     return UserAccountsDrawerHeader(
-      onDetailsPressed: () {
-        Scaffold.of(context).showSnackBar(SnackBar(
-            action: SnackBarAction(label: 'OK', onPressed: () {}),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-            backgroundColor: darkPurple,
-            behavior: SnackBarBehavior.floating,
-            content: Text(
-              'Functionality temporarily disabled. Crowd sourcing module is pending.',
-              style: level2softw,
-            )));
-      },
+      // onDetailsPressed: () {
+      //   Scaffold.of(context).showSnackBar(SnackBar(
+      //       action: SnackBarAction(label: 'OK', onPressed: () {}),
+      //       shape:
+      //           RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      //       backgroundColor: darkPurple,
+      //       behavior: SnackBarBehavior.floating,
+      //       content: Text(
+      //         'Functionality temporarily disabled. Crowd sourcing module is pending.',
+      //         style: level2softw,
+      //       )));
+      // },
       decoration: BoxDecoration(),
       accountEmail: Text(
         "Use your google account to sign in.",
@@ -546,7 +588,10 @@ class _DashBoardState extends State<DashBoard>
         top: 0.0,
       ),
       child: RawMaterialButton(
-        onPressed: (() => _scaffoldKey.currentState.openDrawer()),
+        onPressed: (() {
+          _scaffoldKey.currentState.openDrawer();
+          setVersionString();
+        }),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,

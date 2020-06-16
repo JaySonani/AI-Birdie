@@ -1,5 +1,5 @@
 name: aibirdie
-description: A new Flutter project.
+description: A mobile app for visual and acoustic classification of birds species.
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -23,6 +23,7 @@ dependencies:
   # image
   camera: ^0.5.8+1
   image_picker: ^0.6.7
+  multi_image_picker: ^4.6.7
 
   # audio
   flutter_audio_recorder: ^0.5.5
@@ -62,9 +63,10 @@ dependencies:
   flutter_email_sender: ^3.0.1
 
   # os
+  intl: ^0.16.1
+  package_info: ^0.4.1
   shared_preferences: ^0.5.7+2
   permission_handler: ^5.0.0+hotfix.6
-  intl: ^0.16.1
 
   # API
   grpc: ^2.1.3

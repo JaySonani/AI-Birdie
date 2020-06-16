@@ -38,29 +38,33 @@ class _ImageResultState extends State<ImageResult> {
     CollectionReference refBirdSpecies = db.collection("bird-species");
 
     var classifier = AIBirdieImage.classification();
-
     var predictionResult = await classifier.predict(widget.imageInputFiles);
-    for (Map result in predictionResult) {
-      // //
-      ids = List.castFrom<dynamic, int>(result['id']);
 
+    for (Map result in predictionResult) {
+      ids = List.castFrom<dynamic, int>(result['id']);
       for (var e in ids) {
-        // //
         docSpecies.add(await refBirdSpecies.document(e.toString()).get());
       }
-      // //
       accuracy = List.castFrom<dynamic, double>(result['probabilities']);
     }
 
     setState(() {
-      // //
       labels = docSpecies.map<String>((e) => e.data["name"]).toList();
-      // //
       accuracyStrings = accuracy
           .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
           .toList();
       _showSpinner = false;
     });
+
+    File dump = File('/storage/emulated/0/AiBirdie/dump.txt');
+    dump.writeAsStringSync("ID:\n" + ids.toString(), mode: FileMode.write);
+    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
+    dump.writeAsStringSync("Label:\n" + labels.toString(), mode: FileMode.append);
+    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
+    dump.writeAsStringSync("Accuracy:\n" + accuracy.toString(), mode: FileMode.append);
+    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
+    dump.writeAsStringSync("Accuracy string:\n" + accuracyStrings.toString(), mode: FileMode.append);
+    dump.writeAsStringSync("\n----------------------------------------\n", mode: FileMode.append);
 
     // saveInfoLocally();
   }
@@ -80,7 +84,7 @@ class _ImageResultState extends State<ImageResult> {
       }
     });
     // File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata');
-    debugPrint(imageData.toString());
+    // debugPrint(imageData.toString());
 
   }
 
