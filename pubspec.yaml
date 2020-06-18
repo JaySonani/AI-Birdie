@@ -78,7 +78,6 @@ dependencies:
   ai_birdie_image:
     git: https://github.com/sjdev24/ai_birdie_image.git
 
-
   # Old dependencies incase something goes wrong
   # image_picker: ^0.6.2+1
   # datetime_picker_formfield: ^0.4.3

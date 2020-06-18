@@ -21,6 +21,10 @@ class ImagePrediction {
   static Firestore db = Firestore.instance;
   static CollectionReference refBirdSpecies = db.collection("bird-species");
 
+  init() {
+    db.settings(persistenceEnabled: true);
+  }
+
   static List<ImagePrediction> _predictions = new List();
 
   static final _predictionSubject = BehaviorSubject<List<ImagePrediction>>();
@@ -55,7 +59,7 @@ class ImagePrediction {
     _accuracy = List.castFrom<dynamic, double>(result['probabilities']);
     _labels = docSpecies.map<String>((e) => e.data["name"]).toList();
     _accuracyStrings = accuracy
-        .map<String>((e) => '${(e * 100).toString().substring(0, 5)} %')
+        .map<String>((e) => '${(e * 100.0).toStringAsFixed(3)} %')
         .toList();
     _predictions.add(this);
     _predictionSubject.add(_predictions);
@@ -65,7 +69,8 @@ class ImagePrediction {
     _process(result);
   }
 
-  static void processResult(List<Map> results) {
+  static void processResult(List<dynamic> results) {
+    _predictionSubject.add(null);
     _predictions = List();
     _predictionSubject.add(_predictions);
     for (Map result in results) {
@@ -82,14 +87,6 @@ class _ImageResultState extends State<ImageResult>
   // List<Tab> tabs = [];
   // List<Widget> tabBarViews = [];
 
-  // Remove this when you updated the UI
-  // You can access all these things for one image by predictions[i].ids etc.
-  List<int> ids = [];
-  List<String> labels = [];
-  List<double> accuracy = [];
-  List<String> accuracyStrings = [];
-  List<DocumentSnapshot> docSpecies = [];
-
   @override
   void initState() {
     super.initState();
@@ -100,7 +97,12 @@ class _ImageResultState extends State<ImageResult>
 
   void _doPrediction() async {
     var classifier = AIBirdieImage.classification();
-    var predictionResult = await classifier.predict(widget.imageInputFiles);
+
+    // TODO: If connected to internet
+//    var predictionResult = await classifier.predict(widget.imageInputFiles);
+    // TODO: Offline prediction
+    var predictionResult =
+        await classifier.predictOffline(widget.imageInputFiles);
 
     setState(() {
       ImagePrediction.processResult(predictionResult);

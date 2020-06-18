@@ -13,10 +13,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "2eeefea1e679a7c826a75335b4ed42915348abe5"
+      resolved-ref: c0819fa0abdfdd8d544bc5a26114601babf26758
       url: "https://github.com/sjdev24/ai_birdie_image.git"
     source: git
-    version: "1.0.1"
+    version: "1.0.0"
   archive:
     dependency: transitive
     description:
