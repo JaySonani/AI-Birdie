@@ -9,7 +9,7 @@ import 'package:aibirdie/screens/Dashboard/dash.dart';
 import 'package:aibirdie/screens/Dashboard/my_notes.dart';
 import 'package:aibirdie/screens/Dashboard/checklist.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:aibirdie/services.dart/authentication.dart';
+import 'package:aibirdie/services/authentication.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

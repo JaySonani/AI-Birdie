@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:aibirdie/constants.dart';
 import 'package:aibirdie/components/dimissed_background.dart';
 import 'package:aibirdie/screens/Dashboard/chips/image_full.dart';
+import 'package:page_transition/page_transition.dart';
 
 class ImageChip extends StatefulWidget {
   @override
@@ -154,13 +155,13 @@ class _ImageChipState extends State<ImageChip> {
                                     onTap: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(
-                                            fullscreenDialog: false,
-                                            builder: (context) {
-                                              return ImageFull(
-                                                inp: images[index],
-                                              );
-                                            }),
+                                        PageTransition(
+                                          type: PageTransitionType.fade,
+                                          alignment: Alignment.center,
+                                          child: ImageFull(
+                                            inp: images[index],
+                                          ),
+                                        ),
                                       );
                                     },
                                     child: Padding(

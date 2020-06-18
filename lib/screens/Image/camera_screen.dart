@@ -8,7 +8,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:aibirdie/constants.dart';
 import 'package:aibirdie/screens/landing_page.dart';
 import 'package:aibirdie/screens/Image/image_result.dart';
-import 'package:page_transition/page_transition.dart';
+// import 'package:page_transition/page_transition.dart';
 
 class CameraScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -21,6 +21,7 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   List<String> inputImages = [];
   CameraController controller;
+
   var sca = 1.0;
   var animatedHeight = 80.0;
   var animatedMargin = 10.0;
@@ -122,14 +123,10 @@ class _CameraScreenState extends State<CameraScreen> {
                                       size: 30,
                                     ),
                                     onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        PageTransition(
-                                          type: PageTransitionType.upToDown,
-                                          alignment: Alignment.center,
-                                          child: UploadFile(),
-                                        ),
-                                      );
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                        builder: (context) => UploadFile(),
+                                      ));
                                     },
                                   ),
                                 )
@@ -198,7 +195,7 @@ class _CameraScreenState extends State<CameraScreen> {
                                         style: level2softw.copyWith(
                                           fontWeight: FontWeight.bold,
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ),

@@ -1,103 +1,33 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:rxdart/rxdart.dart';
-
 import 'package:ai_birdie_image/aibirdieimage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:aibirdie/constants.dart';
 import 'package:aibirdie/screens/Image/trivia_screen.dart';
-
-import '../../constants.dart';
-// import 'package:modal_progress_hud/modal_progress_hud.dart';
+import 'package:aibirdie/services/id_to_label.dart';
 
 class ImageResult extends StatefulWidget {
   final List<String> imageInputFiles;
-
   ImageResult({this.imageInputFiles});
-
   @override
   _ImageResultState createState() => _ImageResultState();
 }
 
-class ImagePrediction {
-  static Firestore db = Firestore.instance;
-  static CollectionReference refBirdSpecies = db.collection("bird-species");
-
-  init() {
-    db.settings(persistenceEnabled: true);
-  }
-
-  static List<ImagePrediction> _predictions = new List();
-
-  static final _predictionSubject = BehaviorSubject<List<ImagePrediction>>();
-
-  static ValueStream<List<ImagePrediction>> get predictions =>
-      _predictionSubject.stream;
-
-  List<int> _ids = [];
-  List<String> _labels = [];
-  List<double> _accuracy = [];
-  List<String> _accuracyStrings = [];
-  List<DocumentSnapshot> _docSpecies = [];
-
-  List<int> get ids => _ids;
-
-  List<String> get labels => _labels;
-
-  List<double> get accuracy => _accuracy;
-
-  List<String> get accuracyStrings => _accuracyStrings;
-
-  List<DocumentSnapshot> get docSpecies => _docSpecies;
-
-  ImagePrediction(this._ids, this._labels, this._accuracy,
-      this._accuracyStrings, this._docSpecies);
-
-  void _process(Map result) async {
-    _ids = List.castFrom<dynamic, int>(result['id']);
-    for (var e in ids) {
-      docSpecies.add(await refBirdSpecies.document(e.toString()).get());
-    }
-    _accuracy = List.castFrom<dynamic, double>(result['probabilities']);
-    _labels = docSpecies.map<String>((e) => e.data["name"]).toList();
-    _accuracyStrings = accuracy
-        .map<String>((e) => '${(e * 100.0).toStringAsFixed(3)} %')
-        .toList();
-    _predictions.add(this);
-    _predictionSubject.add(_predictions);
-  }
-
-  ImagePrediction.fromResult(Map result) {
-    _process(result);
-  }
-
-  static void processResult(List<dynamic> results) {
-    _predictionSubject.add(null);
-    _predictions = List();
-    _predictionSubject.add(_predictions);
-    for (Map result in results) {
-      ImagePrediction.fromResult(result);
-    }
-  }
-}
-
 class _ImageResultState extends State<ImageResult>
     with SingleTickerProviderStateMixin {
-  // bool _showSpinner = true;
   TabController tc;
   var isOnline = false;
   var predictionResult;
-
-  // List<Tab> tabs = [];
-  // List<Widget> tabBarViews = [];
+  // bool loading = true;
 
   @override
   void initState() {
     super.initState();
     _doPrediction();
     tc = TabController(length: widget.imageInputFiles.length, vsync: this);
-    // loadWidgets();
   }
 
   void _doPrediction() async {
@@ -110,17 +40,14 @@ class _ImageResultState extends State<ImageResult>
       predictionResult = await classifier.predict(widget.imageInputFiles);
       setState(() => ImagePrediction.processResult(predictionResult));
     } else {
-      classifier.predictOffline(widget.imageInputFiles).then((value) {
-        setState(() {
-          predictionResult = value;
-        });
-      });
+      predictionResult =
+          await classifier.predictOffline(widget.imageInputFiles);
+      setState(() {});
     }
   }
 
   List<Widget> loadOnlineWidgets(predictionsData) {
     List<Widget> ret = [];
-
     for (ImagePrediction prediction in predictionsData)
       ret.add(
         ListView.separated(
@@ -205,15 +132,31 @@ class _ImageResultState extends State<ImageResult>
     return ret;
   }
 
+  Future<String> getLabel(id) async {
+    DefaultAssetBundle.of(context)
+        .loadString("assets/id_to_label.json")
+        .then((value) {
+      return jsonDecode(value)['$id'];
+    });
+    return null;
+  }
 
   List<Widget> loadOfflineWidgets() {
+    // setState(() => loading = true);
+
+    List<OfflineResult> results = [];
+
+    if (predictionResult != null) {
+      setState(() {
+        for (Map pred in predictionResult) {
+          results
+              .add(OfflineResult(ids: pred['id'], accs: pred['probabilities']));
+        }
+        // loading = false;
+      });
+    }
+
     List<Widget> ret = [];
-
-    List labels = [];
-    // List<String> accString = [];
-
-
-    // print("Printing from loadOffline: ${predictionResult[1]['id']}");
 
     if (predictionResult == null) {
       ret.add(
@@ -229,7 +172,7 @@ class _ImageResultState extends State<ImageResult>
               height: 15,
             ),
             padding: EdgeInsets.all(15),
-            itemCount: labels.length,
+            itemCount: results[i].ids.length,
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 child: Center(
@@ -243,12 +186,12 @@ class _ImageResultState extends State<ImageResult>
                       // Navigator.of(context).push(
                       //   MaterialPageRoute(
                       //     builder: (context) => TriviaScreen(
-                      //       accuracy: prediction.accuracy[index],
-                      //       accuracyString: prediction.accuracyStrings[index],
-                      //       docSpecies: prediction.docSpecies[index],
-                      //       id: prediction.ids[index],
-                      //       label: prediction.labels[index],
-                      //       inputImageFile: File(widget.imageInputFiles[0]),
+                      //       accuracy: results[i].accs[index],
+                      //       accuracyString: "${results[i].accs[index]}",
+                      //       // docSpecies: null,
+                      //       id: results[i].ids[index],
+                      //       // label: null,
+                      //       inputImageFile: File(widget.imageInputFiles[i]),
                       //       index: index + 1,
                       //     ),
                       //   ),
@@ -266,15 +209,11 @@ class _ImageResultState extends State<ImageResult>
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: <Widget>[
                             Text(
-                              "",
-                              // labels[i][index],
-                              // prediction.labels[index],
+                              idToLabel("${results[i].ids[index]}"),
                               style: level2softdp,
                             ),
                             Text(
-                              "",
-                              // accString[index],
-                              // prediction.accuracyStrings[index],
+                              "${(results[i].accs[index] * 100.0).toStringAsFixed(3)} %",
                               style: level2softdp,
                             ),
                           ],
@@ -355,4 +294,68 @@ class _ImageResultState extends State<ImageResult>
             ),
     );
   }
+}
+
+class ImagePrediction {
+  static Firestore db = Firestore.instance;
+  static CollectionReference refBirdSpecies = db.collection("bird-species");
+
+  init() {
+    db.settings(persistenceEnabled: true);
+  }
+
+  static List<ImagePrediction> _predictions = new List();
+
+  static final _predictionSubject = BehaviorSubject<List<ImagePrediction>>();
+
+  static ValueStream<List<ImagePrediction>> get predictions =>
+      _predictionSubject.stream;
+
+  List<int> _ids = [];
+  List<String> _labels = [];
+  List<double> _accuracy = [];
+  List<String> _accuracyStrings = [];
+  List<DocumentSnapshot> _docSpecies = [];
+
+  List<int> get ids => _ids;
+  List<String> get labels => _labels;
+  List<double> get accuracy => _accuracy;
+  List<String> get accuracyStrings => _accuracyStrings;
+  List<DocumentSnapshot> get docSpecies => _docSpecies;
+
+  ImagePrediction(this._ids, this._labels, this._accuracy,
+      this._accuracyStrings, this._docSpecies);
+
+  void _process(Map result) async {
+    _ids = List.castFrom<dynamic, int>(result['id']);
+    for (var e in ids) {
+      docSpecies.add(await refBirdSpecies.document(e.toString()).get());
+    }
+    _accuracy = List.castFrom<dynamic, double>(result['probabilities']);
+    _labels = docSpecies.map<String>((e) => e.data["name"]).toList();
+    _accuracyStrings = accuracy
+        .map<String>((e) => '${(e * 100.0).toStringAsFixed(3)} %')
+        .toList();
+    _predictions.add(this);
+    _predictionSubject.add(_predictions);
+  }
+
+  ImagePrediction.fromResult(Map result) {
+    _process(result);
+  }
+
+  static void processResult(List<dynamic> results) {
+    _predictionSubject.add(null);
+    _predictions = List();
+    _predictionSubject.add(_predictions);
+    for (Map result in results) {
+      ImagePrediction.fromResult(result);
+    }
+  }
+}
+
+class OfflineResult {
+  final List ids;
+  final List accs;
+  OfflineResult({this.ids, this.accs});
 }
