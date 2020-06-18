@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:connectivity/connectivity.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'package:ai_birdie_image/aibirdieimage.dart';
@@ -6,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:aibirdie/constants.dart';
 import 'package:aibirdie/screens/Image/trivia_screen.dart';
+
+import '../../constants.dart';
 // import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 class ImageResult extends StatefulWidget {
@@ -83,6 +86,8 @@ class _ImageResultState extends State<ImageResult>
     with SingleTickerProviderStateMixin {
   // bool _showSpinner = true;
   TabController tc;
+  var isOnline = false;
+  var predictionResult;
 
   // List<Tab> tabs = [];
   // List<Widget> tabBarViews = [];
@@ -98,39 +103,211 @@ class _ImageResultState extends State<ImageResult>
   void _doPrediction() async {
     var classifier = AIBirdieImage.classification();
 
-    // TODO: If connected to internet
-//    var predictionResult = await classifier.predict(widget.imageInputFiles);
-    // TODO: Offline prediction
-    var predictionResult =
-        await classifier.predictOffline(widget.imageInputFiles);
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    setState(() => isOnline = !(connectivityResult == ConnectivityResult.none));
 
-    setState(() {
-      ImagePrediction.processResult(predictionResult);
-      // _showSpinner = false;
-    });
-
-    // File dump = File('/storage/emulated/0/AiBirdie/dump.txt');
-    // dump.writeAsStringSync("Predictions:\n" + predictions.map((e) => e.ids).toList().toString(), mode: FileMode.write);
-
-    // saveInfoLocally();
+    if (isOnline) {
+      predictionResult = await classifier.predict(widget.imageInputFiles);
+      setState(() => ImagePrediction.processResult(predictionResult));
+    } else {
+      classifier.predictOffline(widget.imageInputFiles).then((value) {
+        setState(() {
+          predictionResult = value;
+        });
+      });
+    }
   }
 
-  // void saveInfoLocally() {
-  //   Map<String, dynamic> imageData = {};
-  //   String imageID = widget.imageInputFiles[0].split("/").last.split(".").first;
-  //   imageData.addAll({
-  //     imageID: {
-  //       'imageFile': widget.imageInputFiles[0],
-  //       'ids': ids,
-  //       'labels': labels,
-  //       'accuracy': accuracy,
-  //       'accStr': accuracyStrings,
-  //       'docSpecies': docSpecies,
-  //     }
-  //   });
-  // File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata');
-  // debugPrint(imageData.toString());
-  // }
+  List<Widget> loadOnlineWidgets(predictionsData) {
+    List<Widget> ret = [];
+
+    for (ImagePrediction prediction in predictionsData)
+      ret.add(
+        ListView.separated(
+          separatorBuilder: (context, index) => SizedBox(
+            height: 15,
+          ),
+          padding: EdgeInsets.all(15),
+          itemCount: prediction.ids.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Container(
+              child: Center(
+                child: RaisedButton(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  color: Color(0xfff5f5f5),
+                  elevation: 0.0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => TriviaScreen(
+                          accuracy: prediction.accuracy[index],
+                          accuracyString: prediction.accuracyStrings[index],
+                          docSpecies: prediction.docSpecies[index],
+                          id: prediction.ids[index],
+                          label: prediction.labels[index],
+                          inputImageFile: File(widget.imageInputFiles[0]),
+                          index: index + 1,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        "${index + 1}",
+                        style: level2softdp.copyWith(fontSize: 25),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: <Widget>[
+                          Text(
+                            prediction.labels[index],
+                            style: level2softdp,
+                          ),
+                          Text(
+                            prediction.accuracyStrings[index],
+                            style: level2softdp,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // margin:
+              // EdgeInsets.only(bottom: 20, left: 30, right: 30),
+              height: 70,
+              decoration: BoxDecoration(
+                color: Color(0xfff5f5f5),
+                boxShadow: [
+                  BoxShadow(
+                    offset: Offset(-6.00, -6.00),
+                    color: Color(0xffffffff).withOpacity(0.80),
+                    blurRadius: 10,
+                  ),
+                  BoxShadow(
+                    offset: Offset(6.00, 6.00),
+                    color: Color(0xff000000).withOpacity(0.20),
+                    blurRadius: 10,
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(15.00),
+              ),
+            );
+          },
+        ),
+      );
+
+    return ret;
+  }
+
+
+  List<Widget> loadOfflineWidgets() {
+    List<Widget> ret = [];
+
+    List labels = [];
+    // List<String> accString = [];
+
+
+    // print("Printing from loadOffline: ${predictionResult[1]['id']}");
+
+    if (predictionResult == null) {
+      ret.add(
+        Center(
+          child: Text("Loading"),
+        ),
+      );
+    } else
+      for (var i = 0; i < widget.imageInputFiles.length; i++)
+        ret.add(
+          ListView.separated(
+            separatorBuilder: (context, index) => SizedBox(
+              height: 15,
+            ),
+            padding: EdgeInsets.all(15),
+            itemCount: labels.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Container(
+                child: Center(
+                  child: RaisedButton(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    color: Color(0xfff5f5f5),
+                    elevation: 0.0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)),
+                    onPressed: () {
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (context) => TriviaScreen(
+                      //       accuracy: prediction.accuracy[index],
+                      //       accuracyString: prediction.accuracyStrings[index],
+                      //       docSpecies: prediction.docSpecies[index],
+                      //       id: prediction.ids[index],
+                      //       label: prediction.labels[index],
+                      //       inputImageFile: File(widget.imageInputFiles[0]),
+                      //       index: index + 1,
+                      //     ),
+                      //   ),
+                      // );
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          "${index + 1}",
+                          style: level2softdp.copyWith(fontSize: 25),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Text(
+                              "",
+                              // labels[i][index],
+                              // prediction.labels[index],
+                              style: level2softdp,
+                            ),
+                            Text(
+                              "",
+                              // accString[index],
+                              // prediction.accuracyStrings[index],
+                              style: level2softdp,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // margin:
+                // EdgeInsets.only(bottom: 20, left: 30, right: 30),
+                height: 70,
+                decoration: BoxDecoration(
+                  color: Color(0xfff5f5f5),
+                  boxShadow: [
+                    BoxShadow(
+                      offset: Offset(-6.00, -6.00),
+                      color: Color(0xffffffff).withOpacity(0.80),
+                      blurRadius: 10,
+                    ),
+                    BoxShadow(
+                      offset: Offset(6.00, 6.00),
+                      color: Color(0xff000000).withOpacity(0.20),
+                      blurRadius: 10,
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(15.00),
+                ),
+              );
+            },
+          ),
+        );
+    return ret;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,122 +318,41 @@ class _ImageResultState extends State<ImageResult>
           style: level2softw,
         ),
         centerTitle: true,
-//        bottom: TabBar(
-//          indicatorColor: softGreen,
-//          indicatorWeight: 5.0,
-//          labelColor: Colors.white,
-//          labelStyle: level2softdp,
-//          unselectedLabelColor: Colors.white,
-//          unselectedLabelStyle: level2softdp,
-//          controller: tc,
-//          tabs: <Widget>[
-//            for (var i = 0; i < widget.imageInputFiles.length; i++)
-//              Tab(
-//                child: Text("${i + 1}"),
-//              ),
-//          ],
-//        ),
-      ),
-      body: StreamBuilder<List<ImagePrediction>>(
-        stream: ImagePrediction.predictions,
-        builder: (context, predictions) => !predictions.hasData ||
-                predictions.data.length == 0
-            ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(darkPurple),
-                  strokeWidth: 2.0,
-                ),
-              )
-            : TabBarView(
-                controller: tc,
-                children: <Widget>[
-                  for (ImagePrediction prediction in predictions.data)
-                    ListView.separated(
-                      separatorBuilder: (context, index) => SizedBox(
-                        height: 15,
-                      ),
-                      padding: EdgeInsets.all(15),
-                      itemCount: prediction.ids.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Container(
-                            child: Center(
-                              child: RaisedButton(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                color: Color(0xfff5f5f5),
-                                elevation: 0.0,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15)),
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => TriviaScreen(
-                                        accuracy: prediction.accuracy[index],
-                                        accuracyString:
-                                            prediction.accuracyStrings[index],
-                                        docSpecies:
-                                            prediction.docSpecies[index],
-                                        id: prediction.ids[index],
-                                        label: prediction.labels[index],
-                                        inputImageFile:
-                                            File(widget.imageInputFiles[0]),
-                                        index: index + 1,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Text(
-                                      "${index + 1}",
-                                      style:
-                                          level2softdp.copyWith(fontSize: 25),
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: <Widget>[
-                                        Text(
-                                          prediction.labels[index],
-                                          style: level2softdp,
-                                        ),
-                                        Text(
-                                          prediction.accuracyStrings[index],
-                                          style: level2softdp,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            // margin:
-                            // EdgeInsets.only(bottom: 20, left: 30, right: 30),
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: Color(0xfff5f5f5),
-                              boxShadow: [
-                                BoxShadow(
-                                  offset: Offset(-6.00, -6.00),
-                                  color: Color(0xffffffff).withOpacity(0.80),
-                                  blurRadius: 10,
-                                ),
-                                BoxShadow(
-                                  offset: Offset(6.00, 6.00),
-                                  color: Color(0xff000000).withOpacity(0.20),
-                                  blurRadius: 10,
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(15.00),
-                            ));
-                      },
-                    ),
-                ],
+        bottom: TabBar(
+          indicatorColor: softGreen,
+          indicatorWeight: 5.0,
+          labelColor: Colors.white,
+          labelStyle: level2softdp,
+          unselectedLabelColor: Colors.white,
+          unselectedLabelStyle: level2softdp,
+          controller: tc,
+          tabs: <Widget>[
+            for (var i = 0; i < widget.imageInputFiles.length; i++)
+              Tab(
+                child: Text("${i + 1}"),
               ),
+          ],
+        ),
       ),
+      body: isOnline
+          ? StreamBuilder<List<ImagePrediction>>(
+              stream: ImagePrediction.predictions,
+              builder: (context, predictions) => !predictions.hasData ||
+                      predictions.data.length == 0
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(darkPurple),
+                        strokeWidth: 2.0,
+                      ),
+                    )
+                  : TabBarView(
+                      controller: tc,
+                      children: loadOnlineWidgets(predictions.data)),
+            )
+          : TabBarView(
+              controller: tc,
+              children: loadOfflineWidgets(),
+            ),
     );
   }
 }

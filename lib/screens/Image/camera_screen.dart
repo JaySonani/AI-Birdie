@@ -3,14 +3,12 @@ import 'package:aibirdie/screens/upload_file.dart';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:camera/camera.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:aibirdie/constants.dart';
 import 'package:aibirdie/screens/landing_page.dart';
 import 'package:aibirdie/screens/Image/image_result.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 
 class CameraScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -32,6 +30,7 @@ class _CameraScreenState extends State<CameraScreen> {
   AudioCache audioCache = AudioCache();
 
   int imageCount = 0;
+  var temp;
 
   bool session = false;
 
@@ -249,11 +248,12 @@ class _CameraScreenState extends State<CameraScreen> {
                           RaisedButton(
                             padding: EdgeInsets.only(right: 50, left: 10),
                             onPressed: () {
+                              temp = inputImages;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => ImageResult(
-                                    imageInputFiles: inputImages,
+                                    imageInputFiles: temp,
                                   ),
                                 ),
                               );
@@ -279,15 +279,14 @@ class _CameraScreenState extends State<CameraScreen> {
                               ],
                             ),
                           ),
-                      
                           Positioned(
                             left: 0,
                             top: 0,
-                                                      child: CircleAvatar(
-                                                        backgroundColor: darkPurple,
-                                radius: 10,
-                                child: Text("$imageCount", style: level2softw),
-                              ),
+                            child: CircleAvatar(
+                              backgroundColor: darkPurple,
+                              radius: 10,
+                              child: Text("$imageCount", style: level2softw),
+                            ),
                           ),
                         ],
                       ),
@@ -371,50 +370,20 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       final path =
           '/storage/emulated/0/AiBirdie/Images/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await controller.takePicture(path);
 
-      await controller.takePicture(
-        path,
-      );
-
-      var connectivityResult = await (Connectivity().checkConnectivity());
-      if (connectivityResult == ConnectivityResult.none) {
-        Alert(
-            context: context,
-            title: "Network Error",
-            type: AlertType.error,
-            desc:
-                "Image has been saved to the phone.\nYour phone is not connected to the internet currently.\nConnect to the internet to classify the image.",
-            style: AlertStyle(
-              descStyle: level2softdp,
-              isCloseButton: false,
-              titleStyle: level2softdp.copyWith(
-                  fontWeight: FontWeight.bold, fontSize: 25),
-            ),
-            buttons: [
-              DialogButton(
-                radius: BorderRadius.circular(100),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                color: softGreen,
-                child: Text(
-                  "OK",
-                  style: level2softw,
-                ),
-              ),
-            ]).show();
-      } else {
+      setState(() {
         inputImages.add(path);
-        // int total = 0;
-        // for (var i in inputImages) {
-        //   total = File(i).lengthSync();
-        // }
-        // print("Total: $total");
-        setState(() {
-          imageCount++;
-          session = true;
-        });
-      }
+      });
+      // int total = 0;
+      // for (var i in inputImages) {
+      //   total = File(i).lengthSync();
+      // }
+      // print("Total: $total");
+      setState(() {
+        imageCount++;
+        session = true;
+      });
 
       setState(() {
         animatedHeight = 80.0;
