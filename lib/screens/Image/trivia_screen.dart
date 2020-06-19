@@ -88,7 +88,7 @@ class _TriviaScreenState extends State<TriviaScreen> {
         elevation: 0.0,
         backgroundColor: softGreen,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -349,17 +349,20 @@ class _TriviaScreenState extends State<TriviaScreen> {
                     top: mediaQuery.aspectRatio > (9 / 16)
                         ? mediaQuery.height * 0.15 - 100
                         : mediaQuery.height * 0.15 - 80,
-                    child: Material(
-                      borderRadius: BorderRadius.circular(100),
-                      elevation: 10.0,
-                      child: CircleAvatar(
-                        backgroundColor: softGreen,
-                        radius: mediaQuery.aspectRatio > (9 / 16) ? 70 : 60,
-                        onBackgroundImageError: (exception, stackTrace) {
-                          return CircularProgressIndicator();
-                        },
-                        backgroundImage: FileImage(
-                          widget.inputImageFile,
+                    child: Hero(
+                      tag: widget.inputImageFile.path,
+                                          child: Material(
+                        borderRadius: BorderRadius.circular(100),
+                        elevation: 10.0,
+                        child: CircleAvatar(
+                          backgroundColor: softGreen,
+                          radius: mediaQuery.aspectRatio > (9 / 16) ? 70 : 60,
+                          onBackgroundImageError: (exception, stackTrace) {
+                            return CircularProgressIndicator();
+                          },
+                          backgroundImage: FileImage(
+                            widget.inputImageFile,
+                          ),
                         ),
                       ),
                     ),

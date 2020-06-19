@@ -11,8 +11,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 List<CameraDescription> cameras;
 
 class LandingPage extends StatefulWidget {
-  static PageController controller =
-      PageController(initialPage: 1, keepPage: false,);
+  static PageController controller = PageController(
+    initialPage: 1,
+    keepPage: false,
+  );
 
   static PageController camController = PageController(
     keepPage: false,
@@ -30,17 +32,7 @@ class _LandingPageState extends State<LandingPage> {
   var _currentPage = 1;
   var _pages = [
     DashBoard(),
-    PageView(
-      
-
-    //   controller: LandingPage.camController,
-      scrollDirection: Axis.vertical,
-      children: <Widget>[
-        CameraScreen(cameras),
-        Container(),
-      ],
-    ),
-    // AudioClassification(),
+    CameraScreen(cameras),
     StartRecording(),
   ];
 
@@ -63,7 +55,8 @@ class _LandingPageState extends State<LandingPage> {
     Directory imageDir = Directory('/storage/emulated/0/AiBirdie/Images');
     Directory audioDir = Directory('/storage/emulated/0/AiBirdie/Audios');
     // Directory notesDir = Directory('/storage/emulated/0/AiBirdie/Notes');
-    File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata.json');
+    File imageMetaData =
+        File('/storage/emulated/0/AiBirdie/image_metadata.json');
     // File checkFile = File('/storage/emulated/0/AiBirdie/Notes/checklist.txt');
     if (!await aibirdie.exists()) await aibirdie.create();
     if (!await imageDir.exists()) await imageDir.create();
@@ -98,7 +91,7 @@ class _LandingPageState extends State<LandingPage> {
       //   LandingPage.camController.animateToPage(0,
       //       duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
       // } else
-        return true;
+      return true;
     } else
       LandingPage.controller.animateToPage(1,
           duration: Duration(milliseconds: 300), curve: Curves.easeInOut);

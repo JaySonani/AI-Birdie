@@ -31,9 +31,11 @@ class _CameraScreenState extends State<CameraScreen> {
   AudioCache audioCache = AudioCache();
 
   int imageCount = 0;
-  var temp;
 
   bool session = false;
+
+
+ 
 
   @override
   void initState() {
@@ -245,20 +247,21 @@ class _CameraScreenState extends State<CameraScreen> {
                           RaisedButton(
                             padding: EdgeInsets.only(right: 50, left: 10),
                             onPressed: () {
-                              temp = inputImages;
+
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => ImageResult(
-                                    imageInputFiles: temp,
+                                    imageInputFiles: inputImages,
                                   ),
                                 ),
                               );
-                              setState(() {
-                                session = false;
-                                imageCount = 0;
-                                // inputImages.clear();
-                              });
+
+                              // setState(() {
+                              //   session = false;
+                              //   imageCount = 0;
+                              //   // inputImages.clear();
+                              // });
                             },
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(100)),
@@ -364,10 +367,17 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void _onCapturePressed(context) async {
+    print("Sess: $session");
     try {
       final path =
           '/storage/emulated/0/AiBirdie/Images/${DateTime.now().millisecondsSinceEpoch}.jpg';
       await controller.takePicture(path);
+
+      // if(session == false){
+      //   setState(() {
+      //     inputImages.clear();
+      //   });
+      // }
 
       setState(() {
         inputImages.add(path);
@@ -378,7 +388,7 @@ class _CameraScreenState extends State<CameraScreen> {
       // }
       // print("Total: $total");
       setState(() {
-        imageCount++;
+        imageCount = inputImages.length;
         session = true;
       });
 

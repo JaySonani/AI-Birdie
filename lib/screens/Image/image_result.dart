@@ -1,6 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:aibirdie/screens/Image/zoom_image.dart';
+import 'package:aibirdie/screens/landing_page.dart';
+import 'package:camera/camera.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:ai_birdie_image/aibirdieimage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,16 +21,16 @@ class ImageResult extends StatefulWidget {
 
 class _ImageResultState extends State<ImageResult>
     with SingleTickerProviderStateMixin {
-  TabController tc;
+  PageController pc = PageController(initialPage: 0);
+  PageController ipc = PageController(initialPage: 0);
+
   var isOnline = false;
   var predictionResult;
-  // bool loading = true;
 
   @override
   void initState() {
     super.initState();
     _doPrediction();
-    tc = TabController(length: widget.imageInputFiles.length, vsync: this);
   }
 
   void _doPrediction() async {
@@ -44,6 +47,184 @@ class _ImageResultState extends State<ImageResult>
           await classifier.predictOffline(widget.imageInputFiles);
       setState(() {});
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: softGreen,
+        title: Text(
+          "Top 20 Results",
+          style: level2softw,
+        ),
+        centerTitle: true,
+        bottom: headerWidget(context),
+      ),
+      body: WillPopScope(
+        onWillPop: _willPopCallback,
+        child: isOnline ? onlineResults() : offlineResults(),
+      ),
+    );
+  }
+
+  Widget headerWidget(BuildContext context) {
+    return PreferredSize(
+      preferredSize: Size(100, MediaQuery.of(context).size.height * 0.2 + 10),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 10),
+        color: softGreen,
+        height: MediaQuery.of(context).size.height * 0.2,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: Row(
+              // crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Visibility(
+                  visible: widget.imageInputFiles.length == 1 ? false : true,
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    child: RaisedButton(
+                      disabledColor: Colors.grey,
+                      onPressed: () {
+                        ipc.previousPage(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeOut);
+                        pc.previousPage(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeOut);
+                      },
+                      color: darkPurple,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      child: Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: MediaQuery.of(context).size.height * 0.2,
+                  child: PageView(
+                    onPageChanged: (index) {
+                      pc.animateToPage(index,
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.easeOut);
+                    },
+                    controller: ipc,
+                    children: <Widget>[
+                      for (var image in widget.imageInputFiles)
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              PageTransition(
+                                  child: ZoomImage(
+                                    label: "Captured Image",
+                                    image: FileImage(File(image)),
+                                  ),
+                                  type: PageTransitionType.fade),
+                            );
+                          },
+                          child: Hero(
+                            tag: image,
+                            child: Material(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(100)),
+                              // elevation: 5.0,
+                              child: CircleAvatar(
+                                backgroundColor: darkPurple,
+                                backgroundImage: FileImage(
+                                  File(image),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Visibility(
+                  visible: widget.imageInputFiles.length == 1 ? false : true,
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    child: RaisedButton(
+                      disabledColor: Colors.grey,
+                      onPressed: () {
+                        ipc.nextPage(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeOut);
+                        pc.nextPage(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeOut);
+                      },
+                      color: darkPurple,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      child: Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget onlineResults() {
+    return StreamBuilder<List<ImagePrediction>>(
+      stream: ImagePrediction.predictions,
+      builder: (context, predictions) =>
+          !predictions.hasData || predictions.data.length == 0
+              ? Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(darkPurple),
+                    strokeWidth: 2.0,
+                  ),
+                )
+              : Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: PageView(
+                          onPageChanged: (index) {
+                            ipc.animateToPage(index,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeOut);
+                          },
+                          controller: pc,
+                          children: loadOnlineWidgets(predictions.data)),
+                    ),
+                  ],
+                ),
+    );
+  }
+
+  Widget offlineResults() {
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: PageView(
+              onPageChanged: (index) {
+                ipc.animateToPage(index,
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeOut);
+              },
+              controller: pc,
+              children: loadOfflineWidgets()),
+        ),
+      ],
+    );
   }
 
   List<Widget> loadOnlineWidgets(predictionsData) {
@@ -130,15 +311,6 @@ class _ImageResultState extends State<ImageResult>
       );
 
     return ret;
-  }
-
-  Future<String> getLabel(id) async {
-    DefaultAssetBundle.of(context)
-        .loadString("assets/id_to_label.json")
-        .then((value) {
-      return jsonDecode(value)['$id'];
-    });
-    return null;
   }
 
   List<Widget> loadOfflineWidgets() {
@@ -248,51 +420,15 @@ class _ImageResultState extends State<ImageResult>
     return ret;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Top 20 Results",
-          style: level2softw,
-        ),
-        centerTitle: true,
-        bottom: TabBar(
-          indicatorColor: softGreen,
-          indicatorWeight: 5.0,
-          labelColor: Colors.white,
-          labelStyle: level2softdp,
-          unselectedLabelColor: Colors.white,
-          unselectedLabelStyle: level2softdp,
-          controller: tc,
-          tabs: <Widget>[
-            for (var i = 0; i < widget.imageInputFiles.length; i++)
-              Tab(
-                child: Text("${i + 1}"),
-              ),
-          ],
-        ),
-      ),
-      body: isOnline
-          ? StreamBuilder<List<ImagePrediction>>(
-              stream: ImagePrediction.predictions,
-              builder: (context, predictions) => !predictions.hasData ||
-                      predictions.data.length == 0
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(darkPurple),
-                        strokeWidth: 2.0,
-                      ),
-                    )
-                  : TabBarView(
-                      controller: tc,
-                      children: loadOnlineWidgets(predictions.data)),
-            )
-          : TabBarView(
-              controller: tc,
-              children: loadOfflineWidgets(),
-            ),
-    );
+  Future<bool> _willPopCallback() async {
+    List<CameraDescription> cameras;
+    cameras = await availableCameras();
+
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LandingPage(cameras)),
+        (route) => false);
+    return true;
   }
 }
 

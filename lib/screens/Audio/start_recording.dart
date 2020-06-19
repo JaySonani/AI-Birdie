@@ -14,7 +14,7 @@ class _StartRecordingState extends State<StartRecording> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios),
+          icon: Icon(Icons.arrow_back),
           onPressed: () {
             LandingPage.controller.animateToPage(1,
                 duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
