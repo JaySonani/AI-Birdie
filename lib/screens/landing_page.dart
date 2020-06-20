@@ -55,14 +55,14 @@ class _LandingPageState extends State<LandingPage> {
     Directory imageDir = Directory('/storage/emulated/0/AiBirdie/Images');
     Directory audioDir = Directory('/storage/emulated/0/AiBirdie/Audios');
     // Directory notesDir = Directory('/storage/emulated/0/AiBirdie/Notes');
-    File imageMetaData =
-        File('/storage/emulated/0/AiBirdie/image_metadata.json');
+    // File imageMetaData =
+    //     File('/storage/emulated/0/AiBirdie/image_metadata.json');
     // File checkFile = File('/storage/emulated/0/AiBirdie/Notes/checklist.txt');
     if (!await aibirdie.exists()) await aibirdie.create();
     if (!await imageDir.exists()) await imageDir.create();
     if (!await audioDir.exists()) await audioDir.create();
     // if (!await notesDir.exists()) await notesDir.create();
-    if (!await imageMetaData.exists()) await imageMetaData.writeAsString('');
+    // if (!await imageMetaData.exists()) await imageMetaData.writeAsString('');
     // if (!await checkFile.exists()) await checkFile.writeAsString('');
   }
 

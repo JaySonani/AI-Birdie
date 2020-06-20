@@ -38,7 +38,7 @@ Future<void> signInWithGoogle() async {
     prefs.setString('userEmail', googleUser.email);
     prefs.setString('userPhotoUrl', googleUser.photoUrl);
 
-    print("Signed in: ${fbUser.displayName}");
+    // print("Signed in: ${fbUser.displayName}");
     signedIn = true;
   } catch (e) {}
 }

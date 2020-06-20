@@ -26,11 +26,22 @@ class _ImageResultState extends State<ImageResult>
 
   var isOnline = false;
   var predictionResult;
+  var showImages = false;
 
   @override
   void initState() {
     super.initState();
     _doPrediction();
+    setImageFlag();
+  }
+
+  void setImageFlag() async {
+        var settings = await Firestore.instance
+        .collection('settings')
+        .document('config')
+        .get();
+    setState(() => showImages = settings.data['showImages']);
+
   }
 
   void _doPrediction() async {
@@ -257,6 +268,7 @@ class _ImageResultState extends State<ImageResult>
                           label: prediction.labels[index],
                           inputImageFile: File(widget.imageInputFiles[0]),
                           index: index + 1,
+                          showImages: showImages,
                         ),
                       ),
                     );
