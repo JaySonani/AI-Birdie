@@ -6,8 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:aibirdie/constants.dart';
 import 'package:aibirdie/components/dimissed_background.dart';
-import 'package:aibirdie/screens/Dashboard/chips/image_full.dart';
+// import 'package:aibirdie/screens/Dashboard/chips/image_full.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:aibirdie/screens/Image/zoom_image.dart';
 
 class ImageChip extends StatefulWidget {
   @override
@@ -158,9 +159,14 @@ class _ImageChipState extends State<ImageChip> {
                                         PageTransition(
                                           type: PageTransitionType.fade,
                                           alignment: Alignment.center,
-                                          child: ImageFull(
-                                            inp: images[index],
+                                          child: ZoomImage(
+                                            image: FileImage(images[index]),
+                                            label: "",
                                           ),
+
+                                          // ImageFull(
+                                          //   inp: images[index],
+                                          // ),
                                         ),
                                       );
                                     },
@@ -172,7 +178,7 @@ class _ImageChipState extends State<ImageChip> {
                                         borderRadius:
                                             BorderRadius.circular(100),
                                         child: Hero(
-                                          tag: '${images[index].path}',
+                                          tag: FileImage(images[index]),
                                           child: CircleAvatar(
                                             radius: 28,
                                             backgroundImage:

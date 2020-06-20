@@ -13,14 +13,14 @@ class ImageFull extends StatefulWidget {
 
 class _ImageFullState extends State<ImageFull> {
 
-  @override
-  void initState() {
-    super.initState();
-    File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata.json');
-    String fileContent = imageMetaData.readAsStringSync();
-    var info = fileContent;
-    print(info);
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   File imageMetaData = File('/storage/emulated/0/AiBirdie/image_metadata.json');
+  //   String fileContent = imageMetaData.readAsStringSync();
+  //   var info = fileContent;
+  //   print(info);
+  // }
 
 
 
