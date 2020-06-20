@@ -367,7 +367,6 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void _onCapturePressed(context) async {
-    print("Sess: $session");
     try {
       final path =
           '/storage/emulated/0/AiBirdie/Images/${DateTime.now().millisecondsSinceEpoch}.jpg';

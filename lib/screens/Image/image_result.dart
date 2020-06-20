@@ -36,12 +36,11 @@ class _ImageResultState extends State<ImageResult>
   }
 
   void setImageFlag() async {
-        var settings = await Firestore.instance
+    var settings = await Firestore.instance
         .collection('settings')
         .document('config')
         .get();
     setState(() => showImages = settings.data['showImages']);
-
   }
 
   void _doPrediction() async {
@@ -433,6 +432,8 @@ class _ImageResultState extends State<ImageResult>
   }
 
   Future<bool> _willPopCallback() async {
+    // await ImagePrediction._predictionSubject.close();
+
     List<CameraDescription> cameras;
     cameras = await availableCameras();
 
@@ -491,6 +492,7 @@ class ImagePrediction {
   ImagePrediction.fromResult(Map result) {
     _process(result);
   }
+
 
   static void processResult(List<dynamic> results) {
     _predictionSubject.add(null);
