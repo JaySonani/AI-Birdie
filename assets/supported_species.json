@@ -238,8 +238,27 @@
       "Winter Wren",
       "Common Yellowthroat"
    ],
-   "commonSpecies": {
-      "audios": [],
-      "images": []
-   }
+   "commonSpecies": [
+      "House Sparrow",
+      "Jungle Babbler",
+      "Black Drongo",
+      "Barn owl",
+      "Common Myna",
+      "Common Tailorbird",
+      "Coppersmith Barbet",
+      "Indian Peafowl",
+      "House Crow",
+      "Rock dove",
+      "Laughing Dove",
+      "Rose-ringed Parakeet",
+      "Greater Coucal",
+      "Green Bee Eater",
+      "Indian Roller",
+      "White-throated Kingfisher",
+      "Red Vented Bulbul",
+      "Black Kite",
+      "Red Whiskered Bulbul",
+      "Ashy Prinia",
+      "Little Egret"
+   ]
 }

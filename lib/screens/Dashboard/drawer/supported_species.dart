@@ -13,12 +13,14 @@ class _SupportedSpeciesState extends State<SupportedSpecies>
   TabController tc;
   List imageSpecies = [];
   List audioSpecies = [];
+  List commonSpecies = [];
+
   bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    tc = TabController(length: 2, vsync: this);
+    tc = TabController(length: 3, vsync: this);
     loadJsonFile();
   }
 
@@ -29,6 +31,7 @@ class _SupportedSpeciesState extends State<SupportedSpecies>
     setState(() {
       imageSpecies.addAll(speciesList['imageSpecies']);
       audioSpecies.addAll(speciesList['audioSpecies']);
+      commonSpecies.addAll(speciesList['commonSpecies']);
       loading = false;
     });
   }
@@ -77,6 +80,19 @@ class _SupportedSpeciesState extends State<SupportedSpecies>
                 ],
               ),
             ),
+                        Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text("Common"),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Icon(Icons.chrome_reader_mode),
+                ],
+              ),
+            ),
+
           ],
         ),
       ),
@@ -169,6 +185,48 @@ class _SupportedSpeciesState extends State<SupportedSpecies>
                           ),
                           title: Text(
                             audioSpecies[index],
+                            style: level2softdp,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),Center(
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) {
+                      return SizedBox(height: 15);
+                    },
+                    itemCount: commonSpecies.length,
+                    padding: EdgeInsets.all(15),
+                    itemBuilder: (context, index) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xfff5f5f5),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: Offset(-6.00, -6.00),
+                              color: Color(0xffffffff).withOpacity(0.80),
+                              blurRadius: 10,
+                            ),
+                            BoxShadow(
+                              offset: Offset(6.00, 6.00),
+                              color: Color(0xff000000).withOpacity(0.20),
+                              blurRadius: 10,
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(15.00),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: softGreen,
+                            child: Text(
+                              "${index + 1}",
+                              style: level2softw,
+                            ),
+                          ),
+                          title: Text(
+                            commonSpecies[index],
                             style: level2softdp,
                           ),
                         ),
