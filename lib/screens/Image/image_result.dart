@@ -447,7 +447,7 @@ class _ImageResultState extends State<ImageResult>
 
 class ImagePrediction {
   static Firestore db = Firestore.instance;
-  static CollectionReference refBirdSpecies = db.collection("bird-species");
+  static CollectionReference refBirdSpecies = db.collection("bird-species-new");
 
   init() {
     db.settings(persistenceEnabled: true);
